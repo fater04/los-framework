@@ -2,9 +2,9 @@
 //configuration base de donnee
 $database = array(
     "serveur" => "localhost",
-    "nom_base" => "los-framework",
+    "nom_base" => "base",
     "utilisateur" => "root",
-    "motdepasse" => "ruthamar1991"
+    "motdepasse" => ""
 );
 
 //configuration email
@@ -33,3 +33,5 @@ define("AUTHORIZENET_LOG_FILE", "phplog");
 \systeme\Application\Configuration::addConfiguration($configuration,"DefaultApp");
 //appelation fonction backup
 //\systeme\Application\Application::Backup() ;
+//appelation fonction liste de backup
+//\systeme\Application\Application::BackupList() ;

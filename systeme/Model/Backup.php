@@ -140,7 +140,7 @@ class Backup
         $this->user = $infos['utilisateur'];
         $this->pass = $infos['motdepasse'];
         $this->storage = $root . "backup/";
-        $this->filename="Backup_".date("Y_m_d_H_i_s").".sql";
+        $this->filename = "Backup_" . date("Y_m_d_H_i_s") . ".sql";
     }
 
     public function make()
@@ -174,4 +174,72 @@ class Backup
         }
     }
 
+    public function liste()
+    {
+        $message = "";
+        if (isset($_GET['Delbackup'])) {
+            $path = $this->storage . $_GET['Delbackup'];
+            unlink($path);
+            header("Refresh: 0; url=" . $_SERVER['HTTP_REFERER']);
+            $message = "Supprimer !";
+        }
+        if (self::IsDir_or_CreateIt($this->storage)) {
+            $folder = $this->storage;
+            $dir = opendir($folder);
+            $list = "";
+            while ($file = readdir($dir)) {
+                if ($file != '.' && $file != '..' && !is_dir($folder . $file)) {
+                    $list .= "
+               <tr>
+               <td> " . $file . "</td>
+               <td> <a href='" . $folder . "/" . $file . "' class='btn btn-info'><span class='fa fa-download'></span>telecharger</a></td>
+               <td><a href='" . self::urlEncours() . "?Delbackup=" . $file . "' class='btn btn-danger'><span class='fa fa-trash'></span>supprimer</a></td>
+               </tr>";
+                }
+            }
+            closedir($dir);
+            $table = "
+        <div class='table-responsive'>
+        " . $message . "
+           <table class='table'>
+           <table class='table table-hover table-bordered'>
+            <thead>
+                <tr>
+                    <th>NAME</th>
+                    <th>DOWNLOAD</th>
+                    <th>DELETE</th>
+                </tr>
+            </thead>
+            <tbody>
+                " . $list . "
+            </tbody>
+  </table>
+          </table>
+        </div>";
+            return $table;
+        } else {
+            return "Une erreur est survenue lors de la création
+              du dossier " . $this->storage;
+        }
+    }
+    public function urlEncours()
+    {
+        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+            $url = "https";
+        } else {
+            $url = "http";
+        }
+
+        // Ajoutez // à l'URL.
+        $url .= "://";
+
+        // Ajoutez l'hôte (nom de domaine, ip) à l'URL.
+        $url .= $_SERVER['HTTP_HOST'];
+
+        // Ajouter l'emplacement de la ressource demandée à l'URL
+        $url .= $_SERVER['REQUEST_URI'];
+
+        // Afficher l'URL
+        return $url;
+    }
 }

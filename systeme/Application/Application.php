@@ -91,6 +91,10 @@ class Application extends Session
         $bck=new Backup($_SESSION['database'],self::ROOT());
         return $bck->make();
     }
+    public static function BackupList(){
+        $bck=new Backup($_SESSION['database'],self::ROOT());
+        return $bck->liste();
+    }
 
     public static function css($css){
        return self::$assette->css($css);
