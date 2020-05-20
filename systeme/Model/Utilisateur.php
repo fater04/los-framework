@@ -1,4 +1,5 @@
 <?php
+
 namespace systeme\Model;
 
 use PHPMailer\PHPMailer\Exception;
@@ -303,51 +304,65 @@ class Utilisateur extends Model
      */
     public function Enregistrer()
     {
+        $con = self::connection();
         try {
             if (self::SiPseudoExiste($this->getPseudo())) {
-                return "pseudo existe";
+                return "pseudo existe ";
+            } else if (self::SiEmailExiste($this->getEmail())) {
+                return "email existe";
             } else {
-                $req = "insert into utilisateur (pseudo, email, role, nom, prenom, motdepasse, active,photo,telephone) VALUES 
-        ('" . $this->pseudo . "','" . $this->email . "','" . $this->role . "','" . $this->nom . "','" . $this->prenom . "','" . $this->motdepasse . "','" . $this->active . "','" . $this->photo . "','" . $this->telephone . "')";
-                if (self::connection()->query($req)) {
-                    $con = null;
+                $req = "insert into utilisateur (pseudo, email, role, nom, prenom, motdepasse, active,photo,telephone) VALUES (:pseudo, :email, :role, :nom, :prenom, :motdepasse, :active,:photo,:telephone)";
+                $stmt = $con->prepare($req);
+                $param = array(
+                    ":pseudo" => $this->pseudo,
+                    ":email" => $this->email,
+                    ":role" => $this->role,
+                    ":nom" => $this->nom,
+                    ":prenom" => $this->prenom,
+                    ":motdepasse" => $this->motdepasse,
+                    ":active" => $this->active,
+                    ":photo" => $this->photo,
+                    ":telephone" => $this->telephone
+                );
+                if ($stmt->execute($param)) {
                     return "ok";
                 } else {
-                    $con = null;
                     return "no";
                 }
             }
-        } catch (Exception $ex) {
-            return $ex->getMessage();
+        } catch (\Exception $ex) {
+            throw new \Exception($ex->getMessage());
         }
-
-
     }
-    public function Enregistrer_online()
+
+
+    public function EnregistrerOnline()
     {
+        $con = self::connection();
         try {
             if (self::SiPseudoExiste($this->getPseudo())) {
                 return "pseudo";
             } else if (self::SiEmailExiste($this->getEmail())) {
                 return "email";
             } else {
-                $req = "insert into utilisateur (pseudo, email, motdepasse,role) VALUES 
-        ('" . $this->pseudo . "','" . $this->email . "','" . $this->motdepasse . "','" . $this->role . "')";
-                if (self::connection()->query($req)) {
-                    $con = null;
+                $req = "insert into utilisateur (pseudo, email, motdepasse,role) VALUES   (:pseudo, :email, :motdepasse,:role)";
+                $stmt = $con->prepare($req);
+                $param = array(
+                    ":pseudo" => $this->pseudo,
+                    ":email" => $this->email,
+                    ":motdepasse" => $this->motdepasse,
+                    ":role" => $this->role
+                );
+                if ($stmt->execute($param)) {
                     return "ok";
                 } else {
-                    $con = null;
                     return "no";
                 }
             }
-        } catch (Exception $ex) {
-            return $ex->getMessage();
+        } catch (\Exception $ex) {
+            throw new \Exception($ex->getMessage());
         }
-
-
     }
-
 
     /**
      * rechercher utilisateur
@@ -356,27 +371,19 @@ class Utilisateur extends Model
      */
     public static function Rechercher($critere)
     {
-        $req = "select *from utilisateur where id='" . $critere . "' or pseudo='" . $critere . "' or email='" . $critere . "' or telephone='" . $critere . "'";
-        $rs = self::connection()->query($req);
-        if ($data = $rs->fetch()) {
-            $con = null;
-            $u = new Utilisateur();
-            $u->setId($data['id']);
-            $u->setNom($data['nom']);
-            $u->setPrenom($data['prenom']);
-            $u->setEmail($data['email']);
-            $u->setRole($data['role']);
-            $u->setActive($data['active']);
-            $u->setMotdepasse($data['motdepasse']);
-            $u->setPseudo($data['pseudo']);
-            $u->setStatut($data['statut']);
-            $u->setPhoto($data['photo']);
-            $u->setTelephone($data['telephone']);
-            return $u;
-
-        } else {
-            $con = null;
-            return null;
+        try {
+            $con = self::connection();
+            $req = "select *from utilisateur WHERE id=:id or pseudo=:id or email=:id or telephone=:id";
+            $stmt = $con->prepare($req);
+            $stmt->execute(array(":id" => $critere));
+            $res = $stmt->fetchAll(\PDO::FETCH_CLASS, "systeme\\Model\\Utilisateur");
+            if (count($res) > 0) {
+                return $res[0];
+            } else {
+                return null;
+            }
+        } catch (\Exception $ex) {
+            throw new \Exception($ex->getMessage());
         }
     }
 
@@ -390,37 +397,32 @@ class Utilisateur extends Model
     public static function Connecter($critere, $motdepasse)
     {
         try {
-            $req = "select *from utilisateur where (pseudo='" . $critere . "' or email='" . $critere . "' or telephone='" . $critere . "') ";
-            $rs = self::connection()->query($req);
-            if ($data = $rs->fetch()) {
+            $con = self::connection();
+            $req = "select  id,motdepasse from utilisateur WHERE  pseudo=:id or email=:id or telephone=:id";
+            $stmt = $con->prepare($req);
+            $stmt->execute(array(":id" => $critere));
+            if ($data = $stmt->fetch()) {
                 if (password_verify($motdepasse, $data['motdepasse'])) {
                     if (isset($_SESSION['utilisateur'])) {
-                        return "session";
+                        return "Utilisateur déjà connecté ,session ouverte ";
                     } else {
                         if (!self::SiUtilisateurActive($data['id'])) {
-                            return "inactif";
+                            return "Votre compte est inactif";
                         } else {
-                            /* if (self::SiUtilisateurConnecter($data['id'])) {
-
-                                 return "Imposible de se connecter, Vous etes deja connecter sur un autre ordinateur , <br />
-                                 Deconnecter avant de recommencer
-                                  ";
-                             } else {*/
                             $re = "UPDATE utilisateur SET statut='1' WHERE id='" . $data['id'] . "'";
                             self::connection()->query($re);
-                            $_SESSION['utilisateur'] = $data['id'];
-                            $_SESSION['pseudo'] = $data['pseudo'];
-                            $_SESSION['role'] = $data['role'];
+                            $_SESSION['utilisateur'] = self::Rechercher($data['id']);
                             return "ok";
-                            //}
                         }
                     }
-                }else {
-                    return "incorrect";
+                } else {
+                    return "Mot de passe Incorrect !";
                 }
             } else {
-                return "incorect";
+                return "Utilisateur introuvable !";
             }
+
+
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
         }
@@ -435,9 +437,10 @@ class Utilisateur extends Model
     public static function Deconnecter()
     {
         if (isset($_SESSION['utilisateur'])) {
+
             $id = $_SESSION['utilisateur'];
-            $re = "UPDATE utilisateur SET statut='0' WHERE id='" . $id . "'";
-            self::connection()->query($re);
+            $req = "UPDATE utilisateur SET statut='0' WHERE id='" . $id . "'";
+            self::connection()->query($req);
             session_destroy();
             return true;
         } else {
@@ -475,45 +478,111 @@ class Utilisateur extends Model
 
     }
 
+    public static function createTableUtilisateur()
+    {
+        $con = self::connection();
+        $req = "CREATE TABLE `utilisateur` (
+  `id` int NOT NULL,
+  `pseudo` varchar(20) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `nom` varchar(100) DEFAULT NULL,
+  `prenom` varchar(100) DEFAULT NULL,
+  `role` varchar(50) DEFAULT NULL,
+  `active` enum('oui','non') DEFAULT 'non',
+  `motdepasse` varchar(500) DEFAULT NULL,
+  `statut` varchar(50) NOT NULL DEFAULT '1',
+  `date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `telephone` varchar(50) DEFAULT NULL,
+  `photo` varchar(900) NOT NULL DEFAULT '''n/a'''
+) ENGINE=InnoDB ";
+
+
+        $stmt = $con->prepare($req);
+        if ($stmt->execute()) {
+            return "ok";
+        } else {
+            return "no";
+        }
+    }
 
     /**
      * @return bool
      */
-    public function modifier()
-    {
 
-        $req = "update utilisateur set nom='" . $this->nom . "',motdepasse='" . $this->motdepasse . "',email='" . $this->email . "',pseudo='" . $this->pseudo . "',role='" . $this->role . "' where id='" . $this->id . "'";
-        if (self::connection()->query($req)) {
-            $con = null;
-            return "ok";
-        } else {
-            $con = null;
-            return "non";
+
+    public function modifierFull()
+    {
+        $con = self::connection();
+        try {
+            $req = "update utilisateur set nom=:nom,prenom=:prenom,motdepasse=:motdepasse,email=:email,pseudo=:pseudo,role=:role ,photo=:photo where id=:id";
+            $stmt = $con->prepare($req);
+            $param = array(
+                ":nom" => $this->nom,
+                ":prenom" => $this->prenom,
+                ":photo" => $this->photo,
+                ":motdepasse" => $this->motdepasse,
+                ":email" => $this->email,
+                ":pseudo" => $this->pseudo,
+                ":role" => $this->role,
+                ":id" => $this->id
+            );
+            if ($stmt->execute($param)) {
+                return "ok";
+            } else {
+                return "no";
+            }
+        } catch (\Exception $ex) {
+            throw new \Exception($ex->getMessage());
         }
     }
 
-    public function modifierP()
-    {
 
-        $req = "update utilisateur set prenom='" . $this->prenom . "',nom='" . $this->nom . "',email='" . $this->email . "',telephone='" . $this->telephone . "',photo='" . $this->photo. "' where id='" . $this->id . "'";
-        if (self::connection()->query($req)) {
-            $con = null;
-            return "ok";
-        } else {
-            $con = null;
-            return "non";
+    public function modifierWithPhoto()
+    {
+        $con = self::connection();
+        try {
+            $req = "update utilisateur set nom=:nom,prenom=:prenom,email=:email,pseudo=:pseudo,role=:role ,photo=:photo where id=:id";
+            $stmt = $con->prepare($req);
+            $param = array(
+                ":nom" => $this->nom,
+                ":prenom" => $this->prenom,
+                ":photo" => $this->photo,
+                ":email" => $this->email,
+                ":pseudo" => $this->pseudo,
+                ":role" => $this->role,
+                ":id" => $this->id
+            );
+            if ($stmt->execute($param)) {
+                return "ok";
+            } else {
+                return "no";
+            }
+        } catch (\Exception $ex) {
+            throw new \Exception($ex->getMessage());
         }
     }
-    public function modifierS()
+
+    public function modifierSimple()
     {
 
-        $req = "update utilisateur set prenom='" . $this->prenom . "',nom='" . $this->nom . "',email='" . $this->email . "',telephone='" . $this->telephone . "' where id='" . $this->id . "'";
-        if (self::connection()->query($req)) {
-            $con = null;
-            return "ok";
-        } else {
-            $con = null;
-            return "non";
+        $con = self::connection();
+        try {
+            $req = "update utilisateur set nom=:nom,prenom=:prenom,email=:email,pseudo=:pseudo where id=:id";
+            $stmt = $con->prepare($req);
+            $param = array(
+                ":nom" => $this->nom,
+                ":prenom" => $this->prenom,
+                ":email" => $this->email,
+                ":pseudo" => $this->pseudo,
+                ":id" => $this->id
+            );
+            if ($stmt->execute($param)) {
+                return "ok";
+            } else {
+                return "no";
+            }
+        } catch (\Exception $ex) {
+            throw new \Exception($ex->getMessage());
         }
     }
 
@@ -521,28 +590,18 @@ class Utilisateur extends Model
      * Lister tout les utilisateur
      * @return array
      */
-    public function Lister()
+    public static function lister()
     {
-        $resultat = array();
-        $req = "select *from utilisateur";
-        $rs = self::connection()->query($req);
-        while ($data = $rs->fetch()) {
-            $u = new Utilisateur();
-            $u->setId($data['id']);
-            $u->setNom($data['nom']);
-            $u->setPseudo($data['pseudo']);
-            $u->setPrenom($data['prenom']);
-            $u->setEmail($data['email']);
-            $u->setRole($data['role']);
-            $u->setActive($data['active']);
-            $u->setMotdepasse($data['motdepasse']);
-            $u->setStatut($data['statut']);
-            $u->setPhoto($data['photo']);
-            $u->setTelephone($data['telephone']);
-            $resultat[] = $u;
+        try {
+            $con = self::connection();
+            $req = 'select *from utilisateur';
+            $stmt = $con->prepare($req);
+            $stmt->execute();
+            $res = $stmt->fetchAll(\PDO::FETCH_CLASS, "systeme\\Model\\Utilisateur");
+            return $res;
+        } catch (\Exception $ex) {
+            throw new \Exception($ex->getMessage());
         }
-        $con = null;
-        return $resultat;
     }
 
     /**
@@ -551,11 +610,12 @@ class Utilisateur extends Model
     public static function listeOnline()
     {
         try {
-            $u = \app\SystemeEcole\Models\Utilisateur::session_valeur();
             $con = self::connection();
-            $req = "select *from utilisateur where statut='1' and id <> '" . $u . "' ";
+            $req = "select *from utilisateur where statut='1' and id <> :id ";
             $stmt = $con->prepare($req);
-            $stmt->execute();
+            $stmt->execute(array(
+                ":id" => \app\SystemeEcole\Models\Utilisateur::session_valeur()
+            ));
             $data = $stmt->fetchAll(\PDO::FETCH_CLASS, "systeme\Model\Utilisateur");
             return $data;
         } catch (Exception $ex) {
@@ -585,9 +645,19 @@ class Utilisateur extends Model
      */
     public static function Supprimer($id)
     {
-        $req = "delete from utilisateur where id='" . $id . "'";
-        self::connection()->query($req);
-        $con = null;
+        $con = self::connection();
+
+        $req = "delete from utilisateur where  id=:id";
+
+        $stmt = $con->prepare($req);
+
+        if ($stmt->execute(array(
+            ":id" => $id
+        ))) {
+            return "ok";
+        } else {
+            return "no";
+        }
     }
 
     /**
@@ -595,9 +665,19 @@ class Utilisateur extends Model
      */
     public static function blocker($id)
     {
-        $req = "update utilisateur set active='non' WHERE id='" . $id . "'";
-        self::connection()->query($req);
-        $con = null;
+        $con = self::connection();
+
+        $req = "update utilisateur set active=:active  where  id=:id";
+        $stmt = $con->prepare($req);
+
+        if ($stmt->execute(array(
+            ":active" => 'non',
+            ":id" => $id
+        ))) {
+            return "ok";
+        } else {
+            return "no";
+        }
     }
 
     /**
@@ -605,34 +685,32 @@ class Utilisateur extends Model
      */
     public static function deblocker($id)
     {
-        $req = "update utilisateur set active='oui' WHERE id='" . $id . "'";
-        self::connection()->query($req);
-        $con = null;
-    }
+        $con = self::connection();
 
-    /**
-     * @return mixed
-     */
-    public static function pseudo()
-    {
-        if (isset($_SESSION['pseudo'])) {
-            return $_SESSION['pseudo'];
+        $req = "update utilisateur set active=:active  where  id=:id";
+        $stmt = $con->prepare($req);
+
+        if ($stmt->execute(array(
+            ":active" => 'oui',
+            ":id" => $id
+        ))) {
+            return "ok";
+        } else {
+            return "no";
         }
     }
 
     /**
      * @return mixed
      */
-    public static function role()
+    public static function utilisateur()
     {
-        if (isset($_SESSION['role'])) {
-            return $_SESSION['role'];
+        if (isset($_SESSION['utilisateur'])) {
+            return $_SESSION['utilisateur'];
         }
     }
 
-    /**
-     * @return mixed
-     */
+
     public static function password()
     {
         $req = "select motdepasse from utilisateur where id='" . self::session_valeur() . "'";
@@ -650,33 +728,51 @@ class Utilisateur extends Model
     public static function changePassword($id, $password)
     {
         try {
-            $password = password_hash($password, PASSWORD_BCRYPT);
-            $req = "update utilisateur set motdepasse='" . $password . "' where id='" . $id . "'";
+
             $con = self::connection();
-            if ($con->query($req)) {
+            $req = "update utilisateur set motdepasse=:password  where  id=:id";
+            $stmt = $con->prepare($req);
+
+            if ($stmt->execute(array(
+                ":password" => password_hash($password, PASSWORD_BCRYPT),
+                ":id" => $id
+            ))) {
                 return "ok";
             } else {
                 return "no";
             }
+
         } catch (Exception $ex) {
             return $ex->getMessage();
         }
     }
 
-    /**
-     * @return mixed
-     */
     public static function dernierId()
     {
-        //include("fonction.php");
         $con = self::connection();
-        $req = "SELECT *FROM utilisateur ORDER BY id DESC LIMIT 1";
-        $rps = $con->query($req);
-        $data = $rps->fetch();
-        $id = $data['id'];
-        $con = null;
-        return $id;
+        $req = "select * from utilisateur order by id desc limit 1";
+        $rs = $con->query($req);
+        $data = $rs->fetch();
+        return $data['id'];
     }
 
+    public static function count()
+    {
+        $con = self::connection();
+        $req = "select COUNT(*) as 'nb' from client ";
+        $rs = $con->query($req);
+        $data = $rs->fetch();
+        return $data['nb'];
 
+    }
+
+    public static function retournerPseudo($id)
+    {
+        $con = self::connection();
+        $req = "select pseudo from utilisateur where id='" . $id . "'";
+        $rs = $con->query($req);
+        $data = $rs->fetch();
+        return $data['pseudo'];
+
+    }
 }
