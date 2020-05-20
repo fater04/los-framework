@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ALCINDOR LOSTHELVEN
- * Date: 20/03/2018
- * Time: 18:16
- */
 
 namespace systeme\Routeur;
 class Routeur

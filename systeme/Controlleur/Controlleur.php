@@ -29,7 +29,7 @@ class Controlleur
         }else{
             require \systeme\Application\Application::ROOT()."app/".\systeme\Application\Application::nomApp()."/".$this->template.$this->nom_template.".php";
         }
-
+        Application::supprimerSessionFlash();
     }
 
     protected function getModel($model)

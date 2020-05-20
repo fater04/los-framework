@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ALCINDOR LOSTHELVEN
- * Date: 12/03/2018
- * Time: 21:34
- */
-
 namespace systeme\Model;
 
 use PHPMailer\PHPMailer\Exception;
