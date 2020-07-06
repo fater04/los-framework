@@ -175,14 +175,6 @@ class Application extends Session
         $data = htmlspecialchars($data);
         return $data;
     }
-//supprimer variable session apres que la page soit load
-    public static function supprimerSessionFlash()
-    {
-        if (isset($_SESSION['flash'])) {
-            unset($_SESSION['flash']);
-        }
-
-    }
 
 
 }

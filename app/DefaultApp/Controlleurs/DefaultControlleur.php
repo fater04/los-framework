@@ -7,24 +7,14 @@
  */
 
 namespace app\DefaultApp\Controlleurs;
-use app\DefaultApp\DefaultApp;
-use app\DefaultApp\Models\TestModel;
 use systeme\Controlleur\Controlleur;
 class DefaultControlleur extends Controlleur
 {
     public function index(){
         $variable['titre']="Acceuil";
-        $_SESSION['flash']['succes']="good";
-
-
-
         return $this->render("default/index",$variable);
     }
 
-    public function test(){
-        $variable['titre']="Acceuil";
-        return $this->render("default/index",$variable);
-
-    }
+   
  
 }

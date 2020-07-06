@@ -2,7 +2,6 @@
 
 <?php
 
-echo $_SESSION['flash']['succes'];
 
 
 
@@ -11,4 +10,3 @@ echo $_SESSION['flash']['succes'];
 
 
 ?>
-<a href="test" >test</a>
