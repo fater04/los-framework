@@ -101,12 +101,18 @@ class ComposerStaticInit99628a08a9037723cbc2d6f9b2e43557
         0 => __DIR__ . '/../..' . '/',
     );
 
+    public static $classMap = array (
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'Zebra_Pagination' => __DIR__ . '/..' . '/stefangabos/zebra_pagination/Zebra_Pagination.php',
+    );
+
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInit99628a08a9037723cbc2d6f9b2e43557::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInit99628a08a9037723cbc2d6f9b2e43557::$prefixDirsPsr4;
             $loader->fallbackDirsPsr4 = ComposerStaticInit99628a08a9037723cbc2d6f9b2e43557::$fallbackDirsPsr4;
+            $loader->classMap = ComposerStaticInit99628a08a9037723cbc2d6f9b2e43557::$classMap;
 
         }, null, ClassLoader::class);
     }

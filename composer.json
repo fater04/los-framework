@@ -13,7 +13,8 @@
     "phpmailer/phpmailer": "^6.0",
     "ifsnop/mysqldump-php": "^2.8",
     "plasticbrain/php-flash-messages": "^1.0",
-    "ixudra/curl": "^6.20"
+    "ixudra/curl": "^6.20",
+    "stefangabos/zebra_pagination": "^2.3"
   },
   "autoload":{
     "psr-4":{
