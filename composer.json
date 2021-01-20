@@ -14,7 +14,8 @@
     "ifsnop/mysqldump-php": "^2.8",
     "plasticbrain/php-flash-messages": "^1.0",
     "ixudra/curl": "^6.20",
-    "stefangabos/zebra_pagination": "^2.3"
+    "stefangabos/zebra_pagination": "^2.3",
+    "delight-im/auth": "^8.2"
   },
   "autoload":{
     "psr-4":{

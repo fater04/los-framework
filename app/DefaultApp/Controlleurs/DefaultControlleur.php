@@ -7,7 +7,10 @@
  */
 
 namespace app\DefaultApp\Controlleurs;
+use Delight\Auth\Auth;
 use systeme\Controlleur\Controlleur;
+use systeme\Model\Utilisateur;
+
 class DefaultControlleur extends Controlleur
 {
     public function index(){

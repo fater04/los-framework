@@ -2,9 +2,9 @@
 //configuration base de donnee
 $database = array(
     "serveur" => "localhost",
-    "nom_base" => "base",
+    "nom_base" => "php_auth",
     "utilisateur" => "root",
-    "motdepasse" => ""
+    "motdepasse" => "root"
 );
 
 //configuration email
