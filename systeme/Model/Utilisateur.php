@@ -540,12 +540,5 @@ class Utilisateur extends Model
         }
     }
 
-//if ($_POST['remember'] == 1) {
-//$rememberDuration = (int) (60 * 60 * 24 * 365.25);
-//}
-//else {
-//    $rememberDuration = null;
-//}
-
 
 }
