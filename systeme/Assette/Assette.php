@@ -34,4 +34,8 @@ class Assette
     public function imageLocation(){
         return "".Application::$dossierProjet."/public/img/";
     }
+
+    public function langue($lang){
+        require "../app/".Application::nomApp()."/Langues/lang.".$lang.".php";
+    }
 }

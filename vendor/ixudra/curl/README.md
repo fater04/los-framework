@@ -3,7 +3,6 @@ ixudra/curl
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/ixudra/curl.svg?style=flat-square)](https://packagist.org/packages/ixudra/curl)
 [![license](https://img.shields.io/github/license/ixudra/curl.svg)]()
-[![StyleCI](https://styleci.io/repos/18486198/shield)](https://styleci.io/repos/18486198)
 [![Total Downloads](https://img.shields.io/packagist/dt/ixudra/curl.svg?style=flat-square)](https://packagist.org/packages/ixudra/curl)
 
 
@@ -18,7 +17,7 @@ use cURL requests and also makes your code more comprehensible.
 
 The provided functionality is completely framework-independent but also contains a Laravel service provider for easy 
 integration into your Laravel project.
- 
+
 
  > Note before posting an issue: When posting an issue for the package, always be sure to provide as much information 
  > regarding the request as possible. This includes the example cURL request you are trying to transfer into the package
@@ -272,6 +271,26 @@ Delete requests work similar to `GET` requests, but use the `delete()` method in
 ```
 
 
+### Sending HEAD requests
+
+HEAD requests work similar to `GET` requests, but use the `head()` method instead:
+
+```php
+
+    use Ixudra\Curl\Facades\Curl;
+
+    // Send a HEAD request to: http://www.foo.com/bar/1
+    $response = Curl::to('http://www.foo.com/bar/1')
+        ->head();
+    
+    // Send a HEAD request to: http://www.foo.com/bar/1?foz=baz
+    $response = Curl::to('http://www.foo.com/bar/1')
+        ->withData( array( 'foz' => 'baz' ) )
+        ->head();
+
+```
+
+
 ### Sending custom headers
 
 Sending custom headers is easy with the `withHeader()` method. Multiple calls can be chained together to add multiple headers to the request:
@@ -310,6 +329,24 @@ You can also use key-value when using the `withHeaders()` method:
     // Send a GET request to: http://www.foo.com/bar with 2 custom headers
     $response = Curl::to('http://foo.com/bar')
         ->withHeaders( array( 'MyFirstHeader' => '123', 'MySecondHeader' => '456' ) )
+        ->get();
+
+```
+
+For (bearer) authorization headers, you can also use specific utility methods:
+
+```php
+
+    use Ixudra\Curl\Facades\Curl;
+
+    // Send a GET request to: http://www.foo.com/bar with "Authorization: 123" header
+    $response = Curl::to('http://foo.com/bar')
+        ->withAuthorization('123')
+        ->get();
+
+    // Send a GET request to: http://www.foo.com/bar with "Authorization: Bearer 123" header
+    $response = Curl::to('http://foo.com/bar')
+        ->withBearer('123')
         ->get();
 
 ```
@@ -536,6 +573,10 @@ use the facades to access the `CurlService`.
     // Send a DELETE request to: http://www.foo.com/bar
     $response = $curlService->to('http://www.foo.com/bar')
         ->delete();
+
+    // Send a HEAD request to: http://www.foo.com/bar
+    $response = $curlService->to('http://www.foo.com/bar')
+        ->head();
 
 ```
 

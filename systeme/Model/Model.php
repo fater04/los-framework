@@ -1,8 +1,5 @@
 <?php
-
-
 namespace systeme\Model;
-
 use systeme\Application\Application;
 use systeme\Application\Session;
 
@@ -374,5 +371,8 @@ class Model extends Session
                 $propriete->setValue($this, $value);
             }
         }
+    }
+    public function toJson() {
+        return json_encode($this);
     }
 }

@@ -20,6 +20,7 @@ class Builder {
         'POST'                  => false,
         'HTTPHEADER'            => array(),
         'SSL_VERIFYPEER'        => false,
+        'NOBODY'                => false,
         'HEADER'                => false,
     );
 
@@ -261,6 +262,28 @@ class Builder {
     }
 
     /**
+     * Add an HTTP Authorization header to the request
+     *
+     * @param   string $token       The authorization token that is to be added to the request
+     * @return Builder
+     */
+    public function withAuthorization($token)
+    {
+        return $this->withHeader( 'Authorization: ' . $token );
+    }
+
+    /**
+     * Add a HTTP bearer authorization header to the request
+     *
+     * @param   string $bearer      The bearer token that is to be added to the request
+     * @return Builder
+     */
+    public function withBearer($bearer)
+    {
+        return $this->withAuthorization(  'Bearer '. $bearer );
+    }
+
+    /**
      * Add a content type HTTP header to the request
      *
      * @param   string $contentType    The content type of the file you would like to download
@@ -482,6 +505,20 @@ class Builder {
     }
 
     /**
+     * Send a HEAD request to a URL using the specified cURL options
+     *
+     * @return mixed
+     */
+    public function head()
+    {
+        $this->appendDataToURL();
+        $this->withCurlOption('NOBODY', true);
+        $this->withCurlOption('HEADER', true);
+
+        return $this->send();
+    }
+
+    /**
      * Send the request
      *
      * @return mixed
@@ -643,7 +680,7 @@ class Builder {
     }
 
     /**
-     * Append set data to the query string for GET and DELETE cURL requests
+     * Append set data to the query string for GET, HEAD and DELETE cURL requests
      *
      * @return string
      */

@@ -8,7 +8,7 @@ Completely framework-agnostic and database-agnostic.
 
 ## Why do I need this?
 
- * There are [tons](http://www.troyhunt.com/2011/01/whos-who-of-bad-password-practices.html) [of](http://www.jeremytunnell.com/posts/swab-password-policies-and-two-factor-authentication-a-comedy-of-errors) [websites](http://badpasswordpolicies.tumblr.com/) with weak authentication systems. Don’t build such a site.
+ * There are [tons](https://www.troyhunt.com/whos-who-of-bad-password-practices/) [of](https://blog.codinghorror.com/password-rules-are-bullshit/) [websites](https://badpasswordpolicies.tumblr.com/) with weak authentication systems. Don’t build such a site.
  * Re-implementing a new authentication system for every PHP project is *not* a good idea.
  * Building your own authentication classes piece by piece, and copying it to every project, is *not* recommended, either.
  * A secure authentication system with an easy-to-use API should be thoroughly designed and planned.
@@ -109,11 +109,11 @@ Migrating from an earlier version of this project? See our [upgrade guide](Migra
 
 // or
 
-// $db = new \Delight\Db\PdoDsn('mysql:dbname=my-database;host=localhost;charset=utf8mb4', 'my-username', 'my-password');
+// $db = \Delight\Db\PdoDatabase::fromDsn(new \Delight\Db\PdoDsn('mysql:dbname=my-database;host=localhost;charset=utf8mb4', 'my-username', 'my-password'));
 // or
-// $db = new \Delight\Db\PdoDsn('pgsql:dbname=my-database;host=localhost;port=5432', 'my-username', 'my-password');
+// $db = \Delight\Db\PdoDatabase::fromDsn(new \Delight\Db\PdoDsn('pgsql:dbname=my-database;host=localhost;port=5432', 'my-username', 'my-password'));
 // or
-// $db = new \Delight\Db\PdoDsn('sqlite:../Databases/my-database.sqlite');
+// $db = \Delight\Db\PdoDatabase::fromDsn(new \Delight\Db\PdoDsn('sqlite:../Databases/my-database.sqlite'));
 
 $auth = new \Delight\Auth\Auth($db);
 ```
@@ -129,6 +129,8 @@ During development, you may want to disable the request limiting or throttling p
 During the lifetime of a session, some user data may be changed remotely, either by a client in another session or by an administrator. That means this information must be regularly resynchronized with its authoritative source in the database, which this library does automatically. By default, this happens every five minutes. If you want to change this interval, pass a custom interval in seconds to the constructor as the fifth argument, which is named `$sessionResyncInterval`.
 
 If all your database tables need a common database name, schema name, or other qualifier that must be specified explicitly, you can optionally pass that qualifier to the constructor as the sixth parameter, which is named `$dbSchema`.
+
+If you want to use a `PdoDatabase` instance (e.g. `$db`) independently as well, please refer to the [documentation of the database library](https://github.com/delight-im/PHP-DB).
 
 ### Registration (sign up)
 
@@ -154,7 +156,7 @@ catch (\Delight\Auth\TooManyRequestsException $e) {
 }
 ```
 
-**Note:** The anonymous callback function is a [closure](http://php.net/manual/en/functions.anonymous.php). Thus, besides its own parameters, only [superglobals](http://php.net/manual/en/language.variables.superglobals.php) like `$_GET`, `$_POST`, `$_COOKIE` and `$_SERVER` are available inside. For any other variable from the parent scope, you need to explicitly make a copy available inside by adding a `use` clause after the parameter list.
+**Note:** The anonymous callback function is a [closure](https://www.php.net/manual/functions.anonymous.php). Thus, besides its own parameters, only [superglobals](https://www.php.net/manual/language.variables.superglobals.php) like `$_GET`, `$_POST`, `$_COOKIE` and `$_SERVER` are available inside. For any other variable from the parent scope, you need to explicitly make a copy available inside by adding a `use` clause after the parameter list.
 
 The username in the third parameter is optional. You can pass `null` there if you don’t want to manage usernames.
 
@@ -283,7 +285,7 @@ catch (\Delight\Auth\TooManyRequestsException $e) {
 }
 ```
 
-**Note:** The anonymous callback function is a [closure](http://php.net/manual/en/functions.anonymous.php). Thus, besides its own parameters, only [superglobals](http://php.net/manual/en/language.variables.superglobals.php) like `$_GET`, `$_POST`, `$_COOKIE` and `$_SERVER` are available inside. For any other variable from the parent scope, you need to explicitly make a copy available inside by adding a `use` clause after the parameter list.
+**Note:** The anonymous callback function is a [closure](https://www.php.net/manual/functions.anonymous.php). Thus, besides its own parameters, only [superglobals](https://www.php.net/manual/language.variables.superglobals.php) like `$_GET`, `$_POST`, `$_COOKIE` and `$_SERVER` are available inside. For any other variable from the parent scope, you need to explicitly make a copy available inside by adding a `use` clause after the parameter list.
 
 You should build an URL with the selector and token and send it to the user, e.g.:
 
@@ -425,7 +427,7 @@ catch (\Delight\Auth\TooManyRequestsException $e) {
 }
 ```
 
-**Note:** The anonymous callback function is a [closure](http://php.net/manual/en/functions.anonymous.php). Thus, besides its own parameters, only [superglobals](http://php.net/manual/en/language.variables.superglobals.php) like `$_GET`, `$_POST`, `$_COOKIE` and `$_SERVER` are available inside. For any other variable from the parent scope, you need to explicitly make a copy available inside by adding a `use` clause after the parameter list.
+**Note:** The anonymous callback function is a [closure](https://www.php.net/manual/functions.anonymous.php). Thus, besides its own parameters, only [superglobals](https://www.php.net/manual/language.variables.superglobals.php) like `$_GET`, `$_POST`, `$_COOKIE` and `$_SERVER` are available inside. For any other variable from the parent scope, you need to explicitly make a copy available inside by adding a `use` clause after the parameter list.
 
 For email verification, you should build an URL with the selector and token and send it to the user, e.g.:
 
@@ -477,7 +479,7 @@ catch (\Delight\Auth\TooManyRequestsException $e) {
 }
 ```
 
-**Note:** The anonymous callback function is a [closure](http://php.net/manual/en/functions.anonymous.php). Thus, besides its own parameters, only [superglobals](http://php.net/manual/en/language.variables.superglobals.php) like `$_GET`, `$_POST`, `$_COOKIE` and `$_SERVER` are available inside. For any other variable from the parent scope, you need to explicitly make a copy available inside by adding a `use` clause after the parameter list.
+**Note:** The anonymous callback function is a [closure](https://www.php.net/manual/functions.anonymous.php). Thus, besides its own parameters, only [superglobals](https://www.php.net/manual/language.variables.superglobals.php) like `$_GET`, `$_POST`, `$_COOKIE` and `$_SERVER` are available inside. For any other variable from the parent scope, you need to explicitly make a copy available inside by adding a `use` clause after the parameter list.
 
 Usually, you should build an URL with the selector and token and send it to the user, e.g. as follows:
 
@@ -839,7 +841,7 @@ for the correct default option in your user interface. You don’t need to check
 
 ### Throttling or rate limiting
 
-All methods provided by this library are *automatically* protected against excessive numbers of requests from clients.
+All methods provided by this library are *automatically* protected against excessive numbers of requests from clients. If the need arises, you can (temporarily) disable this protection using the [`$throttling` parameter](#creating-a-new-instance) passed to the constructor.
 
 If you would like to throttle or rate limit *external* features or methods as well, e.g. those in your own code, you can make use of the built-in helper method for throttling and rate limiting:
 
@@ -869,6 +871,8 @@ If the protection of the resource or feature should additionally depend on anoth
 Allowing short bursts of activity during peak demand is possible by specifying a burst factor as the fourth argument. A value of `5`, for example, would permit temporary bursts of fivefold activity, compared to the generally accepted level.
 
 In some cases, you may just want to *simulate* the throttling or rate limiting. This lets you check whether an action would be permitted without actually modifying the activity tracker. To do so, simply pass `true` as the fifth argument.
+
+**Note:** When you disable throttling on the instance (using the [`$throttling` parameter](#creating-a-new-instance) passed to the constructor), this turns off both the automatic internal protection and the effect of any calls to `Auth#throttle` in your own application code – unless you also set the optional `$force` parameter to `true` in specific `Auth#throttle` calls.
 
 ### Administration (managing users)
 
@@ -1125,7 +1129,7 @@ is the general (mandatory) session cookie. The second (optional) cookie is only 
 
 You can rename the session cookie used by this library through one of the following means, in order of recommendation:
 
- * In the [PHP configuration](http://php.net/manual/en/configuration.file.php) (`php.ini`), find the line with the `session.name` directive and change its value to something like `session_v1`, as in:
+ * In the [PHP configuration](https://www.php.net/manual/configuration.file.php) (`php.ini`), find the line with the `session.name` directive and change its value to something like `session_v1`, as in:
 
    ```
    session.name = session_v1
@@ -1137,7 +1141,7 @@ You can rename the session cookie used by this library through one of the follow
    \ini_set('session.name', 'session_v1');
    ```
 
-   For this to work, `session.auto_start` must be set to `0` in the [PHP configuration](http://php.net/manual/en/configuration.file.php) (`php.ini`).
+   For this to work, `session.auto_start` must be set to `0` in the [PHP configuration](https://www.php.net/manual/configuration.file.php) (`php.ini`).
 
  * As early as possible in your application, and before you create the `Auth` instance, call `\session_name` with an argument like `session_v1`, as in:
 
@@ -1145,7 +1149,7 @@ You can rename the session cookie used by this library through one of the follow
    \session_name('session_v1');
    ```
 
-   For this to work, `session.auto_start` must be set to `0` in the [PHP configuration](http://php.net/manual/en/configuration.file.php) (`php.ini`).
+   For this to work, `session.auto_start` must be set to `0` in the [PHP configuration](https://www.php.net/manual/configuration.file.php) (`php.ini`).
 
 The name of the cookie for [persistent logins](#keeping-the-user-logged-in) will change as well – automatically – following your change of the session cookie’s name.
 
@@ -1159,7 +1163,7 @@ Whatever set of subdomains you choose, you should set the cookie’s attribute t
 
 You can change the attribute through one of the following means, in order of recommendation:
 
- * In the [PHP configuration](http://php.net/manual/en/configuration.file.php) (`php.ini`), find the line with the `session.cookie_domain` directive and change its value as desired, e.g.:
+ * In the [PHP configuration](https://www.php.net/manual/configuration.file.php) (`php.ini`), find the line with the `session.cookie_domain` directive and change its value as desired, e.g.:
 
    ```
    session.cookie_domain = example.com
@@ -1171,7 +1175,7 @@ You can change the attribute through one of the following means, in order of rec
    \ini_set('session.cookie_domain', 'example.com');
    ```
 
-   For this to work, `session.auto_start` must be set to `0` in the [PHP configuration](http://php.net/manual/en/configuration.file.php) (`php.ini`).
+   For this to work, `session.auto_start` must be set to `0` in the [PHP configuration](https://www.php.net/manual/configuration.file.php) (`php.ini`).
 
 #### Restricting the path where cookies are available
 
@@ -1181,7 +1185,7 @@ In most cases, you’ll want to make cookies available for all paths, i.e. any d
 
 You can change the attribute through one of the following means, in order of recommendation:
 
- * In the [PHP configuration](http://php.net/manual/en/configuration.file.php) (`php.ini`), find the line with the `session.cookie_path` directive and change its value as desired, e.g.:
+ * In the [PHP configuration](https://www.php.net/manual/configuration.file.php) (`php.ini`), find the line with the `session.cookie_path` directive and change its value as desired, e.g.:
 
    ```
    session.cookie_path = /
@@ -1193,7 +1197,7 @@ You can change the attribute through one of the following means, in order of rec
    \ini_set('session.cookie_path', '/');
    ```
 
-   For this to work, `session.auto_start` must be set to `0` in the [PHP configuration](http://php.net/manual/en/configuration.file.php) (`php.ini`).
+   For this to work, `session.auto_start` must be set to `0` in the [PHP configuration](https://www.php.net/manual/configuration.file.php) (`php.ini`).
 
 #### Controlling client-side script access to cookies
 
@@ -1203,7 +1207,7 @@ Thus, you should always set `httponly` to `1`, except for the rare cases where y
 
 You can change the attribute through one of the following means, in order of recommendation:
 
- * In the [PHP configuration](http://php.net/manual/en/configuration.file.php) (`php.ini`), find the line with the `session.cookie_httponly` directive and change its value as desired, e.g.:
+ * In the [PHP configuration](https://www.php.net/manual/configuration.file.php) (`php.ini`), find the line with the `session.cookie_httponly` directive and change its value as desired, e.g.:
 
    ```
    session.cookie_httponly = 1
@@ -1215,7 +1219,7 @@ You can change the attribute through one of the following means, in order of rec
    \ini_set('session.cookie_httponly', 1);
    ```
 
-   For this to work, `session.auto_start` must be set to `0` in the [PHP configuration](http://php.net/manual/en/configuration.file.php) (`php.ini`).
+   For this to work, `session.auto_start` must be set to `0` in the [PHP configuration](https://www.php.net/manual/configuration.file.php) (`php.ini`).
 
 #### Configuring transport security for cookies
 
@@ -1225,7 +1229,7 @@ Obviously, this solely depends on whether you are able to serve *all* pages excl
 
 You can change the attribute through one of the following means, in order of recommendation:
 
- * In the [PHP configuration](http://php.net/manual/en/configuration.file.php) (`php.ini`), find the line with the `session.cookie_secure` directive and change its value as desired, e.g.:
+ * In the [PHP configuration](https://www.php.net/manual/configuration.file.php) (`php.ini`), find the line with the `session.cookie_secure` directive and change its value as desired, e.g.:
 
    ```
    session.cookie_secure = 1
@@ -1237,7 +1241,7 @@ You can change the attribute through one of the following means, in order of rec
    \ini_set('session.cookie_secure', 1);
    ```
 
-   For this to work, `session.auto_start` must be set to `0` in the [PHP configuration](http://php.net/manual/en/configuration.file.php) (`php.ini`).
+   For this to work, `session.auto_start` must be set to `0` in the [PHP configuration](https://www.php.net/manual/configuration.file.php) (`php.ini`).
 
 ### Utilities
 

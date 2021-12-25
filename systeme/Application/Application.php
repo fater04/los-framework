@@ -6,10 +6,6 @@
  * Time: 12:35
  */
 
-/*NB: il est important de ne pas modifier cette classe
-,pour le bon fonctionnement du framework ,sauf si vous savez ce que vous faite.
-Alcindor Losthelven Ing Informatique..
-*/
 
 namespace systeme\Application;
 
@@ -167,7 +163,6 @@ class Application extends Session
         }
     }
 
-//teste les variables de methodes post or get
     public static function trimInput($data)
     {
         $data = trim($data);
