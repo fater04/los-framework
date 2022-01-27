@@ -1,4 +1,11 @@
-
+<?php
+//verification si utilisateur connecter
+//use systeme\Application\Application as ap;
+//if (\systeme\Model\Utilisateur::auth()->isLoggedIn()) {
+//    ap::redirection('dashboard');
+//}
+//fin verification
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

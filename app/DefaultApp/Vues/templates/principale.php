@@ -1,3 +1,22 @@
+<?php
+//verification si utilisateur connecter
+//use systeme\Application\Application as ap;
+//use systeme\Model\Utilisateur;
+//
+//if (!Utilisateur::auth()->isLoggedIn()) {
+//    ap::redirection('login');
+//} else {
+//
+//    $userId = Utilisateur::auth()->id();
+//    $userEmail = Utilisateur::auth()->getEmail();
+//    if (!Utilisateur::auth()->isNormal()) {
+//        $msg1 = new \Plasticbrain\FlashMessages\FlashMessages();
+//        $msg1->error("Utilisateur Blocké ,veuillez contacter l'administrateur,svp !", "login");
+//        ap::redirection('login');
+//    }
+//}
+//fin verification
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
