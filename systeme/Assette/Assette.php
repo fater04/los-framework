@@ -12,7 +12,7 @@ use systeme\Application\Application;
 class Assette
 {
     public function css($css){
-         return "".Application::$dossierProjet."/public/css/".$css.".css";
+        return "".Application::$dossierProjet."/public/css/".$css.".css";
     }
 
     public function js($js){

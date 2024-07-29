@@ -330,7 +330,7 @@ class FlashMessages {
         return $this;
     }
 
-    
+
 
     /**
      * Set the HTML that each message is wrapped in

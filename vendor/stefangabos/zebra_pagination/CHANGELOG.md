@@ -1,9 +1,35 @@
+## version 2.4.8 (June 19, 2024)
+
+- fix for preventing potential warnings if superglobal is not present
+
+## version 2.4.7 (January 16, 2024)
+
+- minor amendments to previous commit; see #[38](https://github.com/stefangabos/Zebra_Pagination/issues/38)
+
+## version 2.4.6 (January 15, 2024)
+
+- changed some internal private methods to protected; see #[38](https://github.com/stefangabos/Zebra_Pagination/issues/38); thanks [Bilge](https://github.com/Bilge)!
+
+## version 2.4.5 (June 19, 2023)
+
+- fixed an issue when the library was in `condensed` mode and there were no records available
+
+## version 2.4.4 (September 25, 2022)
+
+- lots of minor bug fixes and source code formatting because we are now using [PHPStan](https://github.com/phpstan/phpstan) for static code analysis and [PHP CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) for detecting coding standards violations, which are now [PSR12](https://www.php-fig.org/psr/psr-12/)-ish with a few of the rules excluded
+
+## version 2.4.3 (February 04, 2022)
+
+- fixed a bug when having arrays in the URL (like `select-products?&example[family]=MyFamily&example[subfamily]=Mysubfamily&other_param=Other`); see [#36](https://github.com/stefangabos/Zebra_Pagination/pull/36); thanks [Franck Dupont](https://github.com/kyfr59)!
+
 ## version 2.4.2 (September 06, 2021)
 
 - fixed a bug where encoded ampersands in pre-existing URL parameters were incorrectly handled; see [#34](https://github.com/stefangabos/Zebra_Pagination/issues/34); thanks [Tom-Lovatt](https://github.com/Tom-Lovatt)!
+
 ## version 2.4.1 (September 02, 2021)
 
 - fixed a bug where running the script on a server's home would cause the link to the first page to be incorrect; see [#35](https://github.com/stefangabos/Zebra_Pagination/issues/35); thanks [Robert](https://github.com/rcorsari)!
+
 ## version 2.4.0 (June 13, 2021)
 
 - fixed compatilibty issues with PHP 8 and updated examples to work with latest versions of MariaDB

@@ -7,23 +7,27 @@
  */
 
 use systeme\Model\Utilisateur;
-
 ?>
-<div class="col-md-12">
-    <div class="card">
-        <div class="card-header">
-            <h3 class="float-start">Liste des utilisateurs</h3>
-            <button class="btn btn-primary btn-round ml-auto float-end " data-bs-toggle="modal"
-                    data-bs-target="#exampleModal" data-bs-whatever="@getbootstrap">
+
+<header class="page-title-bar">
+    <div class="d-flex flex-column flex-md-row">
+        <h3 class="float-start">Liste des utilisateurs</h3>
+        <div class="ml-auto">
+            <button class="btn btn-primary btn-round ml-auto float-end "  type="button"  data-toggle="modal" data-target="#exampleModal" >
                 <i class="fa fa-plus"></i>
                 Ajouter un utilisateur
             </button>
         </div>
+    </div>
+</header>
+
+<div class="col-md-12">
+    <div class="card">
         <div class="card-body table-border-style">
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>
-                    <tr class="table-primary">
+                    <tr class="bg-primary text-white">
                         <th>Pseudo</th>
                         <th>Email</th>
                         <th>Nom Complet</th>
@@ -43,7 +47,7 @@ use systeme\Model\Utilisateur;
                                 <td><?= $user1->getPseudo(); ?></td>
                                 <td><?= $user1->getEmail(); ?></td>
                                 <td><?= $user1->getNom(); ?>&nbsp;<?= $user1->getPrenom(); ?></td>
-                                <td><?= Utilisateur::getRoleById($user1->getId()) ?></td>
+                                <td></td>
                                 <td><?php $i = $user1->getStatut();
                                     if ($i == '0') {
                                         echo 'Debloquer';
@@ -57,24 +61,24 @@ use systeme\Model\Utilisateur;
                                            data-bs-target="#exampleModal<?=$user1->getId()?>" data-bs-whatever="@getbootstrap"
                                            data-toggle="tooltip" title="Modifier Utilisateur"
                                            class="button btn button-icon bg-info">
-                                            <i class="fa fa-edit"></i>
+                                            <i class="fa fa-edit text-white"></i>
                                         </a>
-                                        <a href="utilisateur&id=<?= $user1->getId() ?>" data-toggle="tooltip"
+                                        <a href="users&id=<?= $user1->getId() ?>" data-toggle="tooltip"
                                            title="Suprimer Utilisateur" class="button btn button-icon bg-danger">
-                                            <i class="fa fa-trash"></i>
+                                            <i class="fa fa-trash text-white"></i>
                                         </a>
                                         <?php
                                         if ($i == '0') { ?>
-                                            <a href="utilisateur&id=<?= $user1->getId() ?>&bq" data-toggle="tooltip"
+                                            <a href="users&id=<?= $user1->getId() ?>&bq" data-toggle="tooltip"
                                                title="Bloquer Utilisateur"
                                                class="button btn button-icon bg-warning">
-                                                <i class="fa fa-lock"></i>
+                                                <i class="fa fa-lock text-white"></i>
                                             </a>
                                         <?php } else { ?>
-                                            <a href="utilisateur&id=<?= $user1->getId() ?>&dbq" data-toggle="tooltip"
+                                            <a href="users&id=<?= $user1->getId() ?>&dbq" data-toggle="tooltip"
                                                title="Debloquer Utilisateur"
                                                class="button btn button-icon bg-warning">
-                                                <i class="fa fa-unlock"></i>
+                                                <i class="fa fa-unlock text-white"></i>
                                             </a>
                                         <?php } ?>
                                     </div>
@@ -110,11 +114,8 @@ use systeme\Model\Utilisateur;
                                                         <div class="form-group form-group-default">
                                                             <label>role</label>
                                                             <select class="form-control" name="role" required>
-                                                                <option value="<?= $user1->getRole(); ?>"
-                                                                        aria-hidden="true"
-                                                                        aria-selected=""><?= \systeme\Model\Utilisateur::getRoleById($user1->getId()); ?></option>
-                                                                <?= \systeme\Model\Utilisateur::createRoles() ?>
-                                                                </option>
+
+
                                                             </select>
                                                         </div>
                                                     </div>
@@ -168,14 +169,14 @@ use systeme\Model\Utilisateur;
 </div>
 
 
-<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
-     aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Ajouter Utilisateur</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
                 <form method="post">
@@ -199,7 +200,7 @@ use systeme\Model\Utilisateur;
                             <label>role</label>
                             <select class="form-control" name="role" required>
                                 <option value="" hidden selected>choisir role</option>
-                                <?= Utilisateur::createRoles() ?>
+
                             </select>
                         </div>
                     </div>
@@ -229,9 +230,8 @@ use systeme\Model\Utilisateur;
                     </div>
                     <div class="modal-footer">
                         <input type="hidden" name="add-user"/>
-                        <button type="submit" class="btn  btn-primary">Send message</button>
-                        <button type="button" class="btn  btn-secondary" data-bs-dismiss="modal">Close</button>
-
+                        <button type="submit" class="btn  btn-primary">Save</button>
+                        <button type="button" class="btn  btn-secondary" data--dismiss="modal">Close</button>
                     </div>
                 </form>
             </div>
@@ -239,3 +239,5 @@ use systeme\Model\Utilisateur;
         </div>
     </div>
 </div>
+
+

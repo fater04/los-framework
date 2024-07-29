@@ -4,7 +4,7 @@ use systeme\Application\Application;
 use systeme\Application\Session;
 
 date_default_timezone_set("America/Port-au-Prince");
-
+#[\AllowDynamicProperties]
 class Model extends Session
 {
 

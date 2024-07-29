@@ -2,7 +2,7 @@
 //configuration base de donnee
 $database = array(
     "serveur" => "localhost",
-    "nom_base" => "usismo",
+    "nom_base" => "bd",
     "utilisateur" => "root",
     "motdepasse" => "root"
 );
@@ -26,7 +26,7 @@ $configuration = array(
     "url" => $_GET['url'],
     "database" => $database,
     "configurationEmail"=>$configurationEmail,
-    "dossierProjet" => "/los-framework",
+    "dossierProjet" => "/natcash_api",
     "nomApp" => "DefaultApp"
 );
 define("AUTHORIZENET_LOG_FILE", "phplog");

@@ -2,7 +2,7 @@
 
 
 namespace systeme\Model;
-
+#[\AllowDynamicProperties]
 
 class Html
 {

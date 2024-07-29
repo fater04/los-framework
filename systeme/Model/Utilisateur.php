@@ -11,8 +11,11 @@ use Delight\Auth\Status;
 use Delight\Auth\TooManyRequestsException;
 use Delight\Auth\UnknownIdException;
 use Delight\Auth\UserAlreadyExistsException;
+use PDO;
 use PHPMailer\PHPMailer\Exception;
+use systeme\Application\Session;
 
+#[\AllowDynamicProperties]
 class Utilisateur extends Model
 {
 
@@ -30,13 +33,15 @@ class Utilisateur extends Model
     private $verified;
     private $date_creation;
     private $derniere_connection;
+    private $token;
+    private $token_device;
 
     /**
      * @return mixed
      */
     public function getId()
     {
-        return  $this->id;
+        return $this->id;
     }
 
     /**
@@ -46,24 +51,6 @@ class Utilisateur extends Model
     {
         $this->id = $id;
     }
-
-
-    /**
-     * @return mixed
-     */
-    public function getRole()
-    {
-        return $this->role;
-    }
-
-    /**
-     * @param mixed $role
-     */
-    public function setRole($role): void
-    {
-        $this->role = $role;
-    }
-
 
     /**
      * @return mixed
@@ -84,36 +71,34 @@ class Utilisateur extends Model
     /**
      * @return mixed
      */
-    public function getEmail()
+    public function getRole()
     {
-        return $this->email;
+        return $this->role;
     }
 
-
     /**
-     * @param mixed $email
+     * @param mixed $role
      */
-    public function setEmail($email): void
+    public function setRole($role): void
     {
-        $this->email = $email;
+        $this->role = $role;
     }
 
     /**
      * @return mixed
      */
-    public function getMotdepasse()
+    public function getStatut()
     {
-        return $this->motdepasse;
+        return $this->statut;
     }
 
     /**
-     * @param mixed $motdepasse
+     * @param mixed $statut
      */
-    public function setMotdepasse($motdepasse): void
+    public function setStatut($statut): void
     {
-        $this->motdepasse = $motdepasse;
+        $this->statut = $statut;
     }
-
 
     /**
      * @return mixed
@@ -198,22 +183,6 @@ class Utilisateur extends Model
     /**
      * @return mixed
      */
-    public function getStatut()
-    {
-        return $this->statut;
-    }
-
-    /**
-     * @param mixed $statut
-     */
-    public function setStatut($statut): void
-    {
-        $this->statut = $statut;
-    }
-
-    /**
-     * @return mixed
-     */
     public function getVerified()
     {
         return $this->verified;
@@ -259,396 +228,601 @@ class Utilisateur extends Model
         $this->derniere_connection = $derniere_connection;
     }
 
-
-    public static function auth()
+    /**
+     * @return mixed
+     */
+    public function getToken()
     {
-        return new Auth(self::connection());
+        return $this->token;
     }
 
-    public static function roles()
+    /**
+     * @param mixed $token
+     */
+    public function setToken($token): void
     {
-        return Role::getNames();
+        $this->token = $token;
     }
 
-    public static function username()
+    /**
+     * @return mixed
+     */
+    public function getEmail()
     {
-        return self::auth()->getUsername();
+        return $this->email;
     }
 
-    public static function email()
+    /**
+     * @return mixed
+     */
+    public function getMotdepasse()
     {
-        return self::auth()->getEmail();
+        return $this->motdepasse;
     }
 
-    public static function status()
+
+
+    public function setEmail($email)
     {
-        return self::auth()->getStatus();
+
+        if (!$email == "") {
+            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $this->email = trim(addslashes(strtolower($email)));
+            } else {
+                throw new \Exception("Email invalide");
+            }
+        } else {
+            $this->email = "";
+        }
+
+    }
+    public function setMotdepasse($motdepasse)
+    {
+        $this->motdepasse = password_hash($motdepasse, PASSWORD_BCRYPT);
     }
 
-
-    public static function userInfo($user_id, $nom='', $prenom='', $sexe='', $telephone='', $image='')
+    /**
+     * @return mixed
+     */
+    public function getTokenDevice()
     {
-        $con = self::connection();
+        return $this->token_device;
+    }
+
+    /**
+     * @param mixed $token_device
+     */
+    public function setTokenDevice($token_device): void
+    {
+        $this->token_device = $token_device;
+    }
+
+    public function Enregistrer()
+    {
         try {
-            $req = "insert into users_info (user_id,nom, prenom,sexe,telephone,image) VALUES (:user_id,:nom, :prenom,:sexe,:telephone,:image)";
-            $stmt = $con->prepare($req);
-            $param = array(
-                ":user_id" => $user_id,
-                ":nom" => $nom,
-                ":prenom" => $prenom,
-                ":sexe" => $sexe,
-                ":telephone" => $telephone,
-                ":image" => $image
-            );
-            if ($stmt->execute($param)) {
+
+            if (self::SiTelephoneExiste($this->getTelephone())) {
+                return "Phone exist";
+            }
+            if (self::SiEmailExiste($this->getEmail())) {
+                return "Email exist";
+            }
+            $req = "INSERT INTO utilisateur (pseudo, email, role, nom,prenom,motdepasse, statut, photo, telephone) VALUES (:pseudo,:email, :role, :nom,:prenom, :motdepasse, :statut, :photo, :telephone)";
+            $pdo = self::connection();
+            $stmt = $pdo->prepare($req);
+            $stmt->bindParam(':pseudo', $this->pseudo, PDO::PARAM_STR);
+            $stmt->bindParam(':email', $this->email, PDO::PARAM_STR);
+            $stmt->bindParam(':role', $this->role, PDO::PARAM_STR);
+            $stmt->bindParam(':nom', $this->nom, PDO::PARAM_STR);
+            $stmt->bindParam(':prenom', $this->nom, PDO::PARAM_STR);
+            $stmt->bindParam(':motdepasse', $this->motdepasse, PDO::PARAM_STR);
+            $stmt->bindParam(':statut', $this->statut, PDO::PARAM_STR);
+            $stmt->bindParam(':photo', $this->photo, PDO::PARAM_STR);
+            $stmt->bindParam(':telephone', $this->telephone, PDO::PARAM_STR);
+            if ($stmt->execute()) {
                 return "ok";
             } else {
-                return "Oups une erreur s'est produite. veuillez réessayer !";
-
+                return "Ups, error!";
             }
-        } catch (\Exception $ex) {
-            throw new \Exception($ex->getMessage());
+        } catch (Exception $ex) {
+            return $ex->getMessage();
         }
     }
 
-
-    public function ajouter()
-    {
-        try {
-            $userId = self::auth()->registerWithUniqueUsername($this->email, $this->motdepasse, $this->pseudo);
-            $resultat = self::userInfo($userId, $this->nom, $this->prenom, $this->sexe, $this->telephone, $this->image);
-        } catch (InvalidEmailException $e) {
-            $resultat = 'Invalid email address';
-        } catch (InvalidPasswordException $e) {
-            $resultat = 'Invalid password';
-        } catch (UserAlreadyExistsException $e) {
-            $resultat = 'User already exists';
-        } catch (TooManyRequestsException $e) {
-            $resultat = 'Too many requests';
-        }
-
-        return $resultat;
-    }
-
-    public function modifier()
-    {
-        $con = self::connection();
-        try {
-            $req1 = "update users  set email=:email,username=:username where id=:id";
-            $req2 = "update users_info  set nom=:nom,prenom=:prenom,sexe=:sexe,telephone=:telephone where user_id=:user_id";
-            $stmt1= $con->prepare($req1);
-            $stmt2 = $con->prepare($req2);
-            $param1 = array(
-                ":email" => $this->email,
-                ":username" => $this->pseudo,
-                ":id" => $this->id
-            );
-            $param2 = array(
-                ":nom" => $this->nom,
-                ":prenom" => $this->prenom,
-                ":sexe" => $this->sexe,
-                ":telephone" => $this->telephone,
-                ":user_id"=>$this->id
-            );
-            if ($stmt1->execute($param1)) {
-                if ($stmt2->execute($param2)) {
-                    return "ok";
-                } else {
-                    return "Oups une erreur s'est produite. veuillez réessayer !";
-
-                }
-            } else {
-                return "Oups une erreur s'est produite. veuillez réessayer !";
-
-            }
-        } catch (\Exception $ex) {
-            throw new \Exception($ex->getMessage());
-        }
-    }
-
-    public function ajouterOnline()
-    {
-        try {
-            $resultat = array();
-            $userId = self::auth()->register($this->email, $this->password, $this->pseudo, function ($selector, $token) {
-                $resultat['selector'] = $selector;
-                $resultat['token'] = $token;
-//                echo 'Send ' . $selector . ' and ' . $token . ' to the user (e.g. via email)';
-            });
-
-            $resultat ['reponse'] = self::userInfo($userId, $this->nom, $this->prenom, $this->sexe, $this->telephone, $this->image);
-        } catch (InvalidEmailException $e) {
-            $resultat = 'Invalid email address';
-        } catch (InvalidPasswordException $e) {
-            $resultat = 'Invalid password';
-        } catch (UserAlreadyExistsException $e) {
-            $resultat = 'User already exists';
-        } catch (TooManyRequestsException $e) {
-            $resultat = 'Too many requests';
-        }
-        return $resultat;
-    }
-
-    public static function supprimer($id)
-    {
-        try {
-            self::auth()->admin()->deleteUserById($id);
-            $req = "delete from users_info where  user_id=:id";
-            $stmt = self::connection()->prepare($req);
-            if ($stmt->execute(array(
-                ":id" => $id
-            ))) {
-                return "ok";
-            } else {
-                return "no";
-            }
-        } catch (UnknownIdException $e) {
-            return 'no';
-        }
-    }
-
-    public function lister()
-    {
-        $resultat = array();
-        $req = "select id, email, username, status, verified, roles_mask, registered, last_login from users";
-        $rs = self::connection()->query($req);
-        while ($data = $rs->fetch()) {
-            $rs1 = self::connection()->query("select * from users_info where user_id='" . $data['id'] . "'");
-            $data1 = $rs1->fetch();
-            $u = new Utilisateur();
-            $u->setId($data['id']);
-            $u->setPseudo($data['username']);
-            $u->setEmail($data['email']);
-            $u->setStatut($data['status']);
-            $u->setRole($data['roles_mask']);
-            $u->setVerified($data['verified']);
-            $u->setDateCreation($data['registered']);
-            $u->setDerniereConnection($data['last_login']);
-            $u->setImage($data1['image']);
-            $u->setTelephone($data1['telephone']);
-            $u->setNom($data1['nom']);
-            $u->setPrenom($data1['prenom']);
-            $u->setSexe($data1['sexe']);
-            $resultat[] = $u;
-        }
-        $con = null;
-        return $resultat;
-    }
-
-    public function rechercher($id)
+    private static function SiPseudoExiste($pseudo)
     {
         try {
             $con = self::connection();
-            $req = "select id, email, username, status, verified, roles_mask, registered, last_login from users WHERE id=:id ";
-            $stmt = $con->prepare($req);
-            $stmt->execute(array(":id" => $id));
-            $res = $stmt->fetchAll();
-            if (count($res) > 0) {
-                $rs1 = self::connection()->query("select * from users_info where user_id='" . $res[0]['id'] . "'");
-                $data1 = $rs1->fetch();
-                $u = new Utilisateur();
-                $u->setId($res[0]['id']);
-                $u->setPseudo($res[0]['username']);
-                $u->setEmail($res[0]['email']);
-                $u->setStatut($res[0]['status']);
-                $u->setRole($res[0]['roles_mask']);
-                $u->setVerified($res[0]['verified']);
-                $u->setDateCreation($res[0]['registered']);
-                $u->setDerniereConnection($res[0]['last_login']);
-                $u->setImage($data1['image']);
-                $u->setTelephone($data1['telephone']);
-                $u->setNom($data1['nom']);
-                $u->setPrenom($data1['prenom']);
-                $u->setSexe($data1['sexe']);
-                return $u;
+            $req = $con->prepare("SELECT * FROM utilisateur WHERE pseudo = :pseudo");
+            $req->bindParam(':pseudo', $pseudo);
+            $req->execute();
+            $exists = $req->fetch() ? true : false;
+            $con = null;
+            return $exists;
+        } catch (PDOException $e) {
+            return "Error: " . $e->getMessage();
+        }
+    }
+    private static function SiEmailExiste($email)
+    {
+        try {
+            $con = self::connection();
+            $req = $con->prepare("SELECT * FROM utilisateur WHERE email = :email");
+            $req->bindParam(':email', $email);
+            $req->execute();
+            $exists = $req->fetch() ? true : false;
+            $con = null;
+            return $exists;
+        } catch (PDOException $e) {
+            return "Error: " . $e->getMessage();
+        }
+    }
+
+    private static function SiTelephoneExiste($telephone)
+    {
+        try {
+            $con = self::connection();
+            $req = $con->prepare("SELECT * FROM utilisateur WHERE telephone = :telephone");
+            $req->bindParam(':telephone', $telephone);
+            $req->execute();
+            $exists = $req->fetch() ? true : false;
+            $con = null;
+            return $exists;
+        } catch (PDOException $e) {
+            return "Error: " . $e->getMessage();
+        }
+    }
+    public static function updateMotDePasse($id, $motdepasse) {
+        try {
+            $motdepasse= password_hash($motdepasse, PASSWORD_BCRYPT);
+            $con = self::connection();
+            $req = $con->prepare("UPDATE utilisateur SET motdepasse = :motdepasse WHERE id = :id or email=:id");
+            $req->bindParam(':motdepasse',  $motdepasse);
+            $req->bindParam(':id', $id);
+            if ($req->execute()) {
+                $con = null;
+                return "ok";
             } else {
-                return null;
-            }
-        } catch (\Exception $ex) {
-            throw new \Exception($ex->getMessage());
-        }
-    }
-
-    public static function ajouterRole($userId, $role)
-    {
-        try {
-            self::auth()->admin()->addRoleForUserById($userId, $role);
-            return "ok";
-        } catch (UnknownIdException $e) {
-            return 'Id Introuvable';
-        }
-    }
-
-    public static function retirerRole($userId, $role)
-    {
-        try {
-            self::auth()->admin()->removeRoleForUserById($userId, $role);
-            return "ok";
-        } catch (UnknownIdException $e) {
-            return ('Id Introuvable');
-        }
-    }
-
-    public static function checkRole($userId, $role)
-    {
-        try {
-            if (self::auth()->admin()->doesUserHaveRole($userId, $role)) {
-                return "oui";
-            } else {
+                $con = null;
                 return "non";
             }
-        } catch (UnknownIdException $e) {
-            return ('Unknown user ID');
+        } catch (PDOException $e) {
+            // Handle the exception (log it, rethrow it, or return an error message)
+            return "Error: " . $e->getMessage();
         }
     }
-
-    public static function changerMotdepasse($userId, $password)
+    public function lister()
     {
         try {
-            self::auth()->admin()->changePasswordForUserById($userId, $password);
-            return "ok";
-        } catch (UnknownIdException $e) {
-            return ('Unknown ID');
-        } catch (InvalidPasswordException $e) {
-            return ('Mot de passe Invalid');
+            $con = self::connection();
+            $req = "select *from utilisateur";
+            $stmt = $con->prepare($req);
+            $stmt->execute();
+            $res = $stmt->fetchAll(\PDO::FETCH_CLASS, "systeme\Model\Utilisateur");
+            $con = null;
+            return $res;
+        } catch (\Exception $ex) {
+            return $ex->getMessage();
         }
     }
-
-    public static function login($email, $password, $duree)
+    public static function updateEnLigne($id, $date = '')
     {
         try {
-            if ($duree != null) {
-                Auth::createRememberCookieName();
+            if ($date == '') {
+                $date = date('Y-m-d H:i:s');
             }
-            self::auth()->login($email, $password, $duree);
-            return 'ok';
-        } catch (\Delight\Auth\InvalidEmailException $e) {
-            return " email incorrect !";
-        } catch (\Delight\Auth\InvalidPasswordException $e) {
-            return 'Mot de passe Incorrect !';
-        } catch (\Delight\Auth\EmailNotVerifiedException $e) {
-            return 'Email non verifié ';
-        } catch (\Delight\Auth\TooManyRequestsException $e) {
-            return "Oups une erreur s'est produite. veuillez réessayer plus tard!";
+            $con = self::connection();
+            $req = $con->prepare("UPDATE utilisateur SET derniere_connection = :date WHERE id = :id");
+            $req->bindParam(':date', $date);
+            $req->bindParam(':id', $id);
 
+            if ($req->execute()) {
+                $con = null;
+                return "ok";
+            } else {
+                $con = null;
+                return "non";
+            }
+        } catch (PDOException $e) {
+            return "Error: " . $e->getMessage();
         }
     }
-    public static function logout()
+
+    public static function retournerToken($id){
+        try {
+            $con = self::connection();
+            $req = $con->prepare("SELECT token FROM utilisateur WHERE id = :id");
+            $req->bindParam(':id', $id);
+
+            if ($req->execute()) {
+                $data = $req->fetch(PDO::FETCH_ASSOC);
+                $con = null;
+                return $data ? $data['token'] : null;
+            } else {
+                $con = null;
+                return null;
+            }
+        } catch (PDOException $e) {
+            return "Error: " . $e->getMessage();
+        }
+    }
+    public static function retournerTokenDevice($id){
+        try {
+            $con = self::connection();
+            $req = $con->prepare("SELECT token_device FROM utilisateur WHERE id = :id");
+            $req->bindParam(':id', $id);
+
+            if ($req->execute()) {
+                $data = $req->fetch(PDO::FETCH_ASSOC);
+                $con = null;
+                return $data ? $data['token_device'] : null;
+            } else {
+                $con = null;
+                return null;
+            }
+        } catch (PDOException $e) {
+            return "Error: " . $e->getMessage();
+        }
+    }
+
+    public static function retournerOnline($id)
     {
         try {
-            self::auth()->logOutEverywhere();
-            return "ok";
-        } catch (NotLoggedInException $e) {
-            return 'Not logged in';
+            $con = self::connection();
+            $req = $con->prepare("SELECT derniere_connection FROM utilisateur WHERE colmado = :id");
+            $req->bindParam(':id', $id);
+            $req->execute();
+            if ($data = $req->fetch(PDO::FETCH_ASSOC)) {
+                $nom = $data['derniere_connection'];
+            } else {
+                $nom = '';
+            }
+
+            $con = null;
+            return $nom;
+        } catch (PDOException $e) {
+            return "Error: " . $e->getMessage();
         }
     }
 
-    public static function verifierEmail($selector, $token)
+    public static function retournerEmail($id)
     {
         try {
-            self::auth()->confirmEmail($selector, $token);
-
-            return 'ok';
-        } catch (\Delight\Auth\InvalidSelectorTokenPairException $e) {
-            return 'Invalid token';
-        } catch (\Delight\Auth\TokenExpiredException $e) {
-            return 'Token expired';
-        } catch (\Delight\Auth\UserAlreadyExistsException $e) {
-            return 'Email address already exists';
-        } catch (\Delight\Auth\TooManyRequestsException $e) {
-            return "Oups une erreur s'est produite. veuillez réessayer plus tard!";
+            $con = self::connection();
+            $req = $con->prepare("SELECT email FROM utilisateur WHERE id = :id");
+            $req->bindParam(':id', $id);
+            $req->execute();
+            $data = $req->fetch(PDO::FETCH_ASSOC);
+            $con = null;
+            return $data ? $data['email'] : null;
+        } catch (PDOException $e) {
+            return "Error: " . $e->getMessage();
         }
     }
 
-    public static function changerPasswordCurrentUser($olPassword, $newPassword)
+    public static function retournerTelephone($id)
     {
         try {
-            self::auth()->changePassword($olPassword, $newPassword);
+            $con = self::connection();
+            $req = $con->prepare("SELECT telephone FROM utilisateur WHERE id = :id");
+            $req->bindParam(':id', $id);
+            $req->execute();
 
-            return 'ok';
-        } catch (\Delight\Auth\NotLoggedInException $e) {
-            return 'Not logged in';
-        } catch (\Delight\Auth\InvalidPasswordException $e) {
-            return 'Invalid password(s)';
-        } catch (\Delight\Auth\TooManyRequestsException $e) {
-            return 'Too many requests';
-        }
-    }
-
-    public static function createRoles(){
-        $out = '';
-
-        foreach (Role::getMap() as $roleValue => $roleName) {
-            $out .= '<option value="' . $roleValue . '">' . $roleName . '</option>';
-        }
-
-        return $out;
-    }
-
-    public static function last()
-    {
-        $con = self::connection();
-        $req = "select id  from users order by id DESC limit 1";
-        $rs = $con->query($req);
-        $data = $rs->fetch();
-        return $data['id'];
-
-    }
-
-    public static function getRoleById($id)
-    {
-
-        $roles = '';
-        foreach (self::auth()->admin()->getRolesForUserById($id) as $r1) {
-            $roles .= $r1 . " ";
-        }
-        return $roles;
-    }
-
-    public static function blocker($id)
-    {
-        $con = self::connection();
-
-        $req = "update users set status=:status where  id=:id";
-        $stmt = $con->prepare($req);
-
-        if ($stmt->execute(array(
-            ":status" => Status::LOCKED,
-            ":id" => $id
-        ))) {
-            return "ok";
-        } else {
-            return "no";
-        }
-    }
-
-    public static function deblocker($id)
-    {
-        $con = self::connection();
-
-        $req = "update users set status=:status where  id=:id";
-        $stmt = $con->prepare($req);
-
-        if ($stmt->execute(array(
-            ":status" => Status::NORMAL,
-            ":id" => $id
-        ))) {
-            return "ok";
-        } else {
-            return "no";
+            $data = $req->fetch(PDO::FETCH_ASSOC);
+            $con = null;
+            return $data ? $data['telephone'] : null;
+        } catch (PDOException $e) {
+            return "Error: " . $e->getMessage();
         }
     }
 
     public static function retournerNomComplet($id)
     {
-        $con = self::connection();
-        $req = "select nom ,prenom from users_info where user_id='" . $id . "'";
-        $rs = $con->query($req);
-        $data = $rs->fetch();
-        $nom = strtoupper($data['nom']);
-        $prenom = ucfirst($data['prenom']);
-        return $prenom . " " . $nom;
+        try {
+            $con = self::connection();
+            $req = $con->prepare("SELECT nom,prenom FROM utilisateur WHERE id = :id");
+            $req->bindParam(':id', $id);
+            $req->execute();
+
+            $data = $req->fetch(PDO::FETCH_ASSOC);
+            $con = null;
+            return $data ? $data['nom']." ".$data['prenom'] : "";
+        } catch (PDOException $e) {
+            return "Error: " . $e->getMessage();
+        }
     }
+
+    public static function delete($id)
+    {
+        try {
+            $con = self::connection();
+            $req = $con->prepare("DELETE FROM utilisateur WHERE id = :id");
+            $req->bindParam(':id', $id);
+
+            if ($req->execute()) {
+                $con = null;
+                return "ok";
+            } else {
+                $con = null;
+                return "no";
+            }
+        } catch (PDOException $e) {
+            return "Error: " . $e->getMessage();
+        }
+    }
+
+    public function siBloquerDebloquer($id)
+    {
+        try {
+            $con = self::connection();
+            $req = $con->prepare("SELECT statut FROM utilisateur WHERE id = :id");
+            $req->bindParam(':id', $id);
+            $req->execute();
+
+            $data = $req->fetch(PDO::FETCH_ASSOC);
+            $con = null;
+
+            return $data ? $data['statut'] : null;
+        } catch (PDOException $e) {
+            return "Error: " . $e->getMessage();
+        }
+    }
+
+    public static function retournerId($email)
+    {
+        try {
+            $con = self::connection(); // Get the database connection
+            $req = $con->prepare("SELECT id FROM utilisateur WHERE email = :email");
+            $req->bindParam(':email', $email);
+            $req->execute();
+
+            $data = $req->fetch(PDO::FETCH_ASSOC);
+            $con = null; // Close the connection
+
+            return $data ? strval($data['id']) : "NON ATTRIBUER"; // Return ID or default message
+        } catch (PDOException $e) {
+            // Handle the exception (log it, rethrow it, or return an error message)
+            return "Error: " . $e->getMessage();
+        }
+    }
+
+    public static function updateToken($id)
+    {
+        try {
+            $token=JwtToken::generateJWT($id);
+            $con = self::connection();
+            $req = $con->prepare("UPDATE utilisateur SET token = :token WHERE id = :id");
+            $req->bindParam(':token', $token);
+            $req->bindParam(':id', $id);
+            if ($req->execute()) {
+                $con = null;
+                return "ok";
+            } else {
+                $con = null;
+                return "no";
+            }
+        } catch (PDOException $e) {
+            return "Error: " . $e->getMessage();
+        }
+    }
+    public static function updateTokenDevice($id,$token)
+    {
+        try {
+            $con = self::connection();
+            $req = $con->prepare("UPDATE utilisateur SET token_device = :token WHERE id = :id");
+            $req->bindParam(':token', $token);
+            $req->bindParam(':id', $id);
+            if ($req->execute()) {
+                $con = null;
+                return "ok";
+            } else {
+                $con = null;
+                return "no";
+            }
+        } catch (PDOException $e) {
+            return "Error: " . $e->getMessage();
+        }
+    }
+    public static function deblocker($id)
+    {
+        try {
+            $con = self::connection();
+            $req = "UPDATE utilisateur SET statut = :statut WHERE id = :id";
+            $stmt = $con->prepare($req);
+
+            $stmt->bindParam(':statut', $statut);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+
+            $statut = 'oui';
+
+            if ($stmt->execute()) {
+                return "ok";
+            } else {
+                return "Query execution failed: " . implode(", ", $stmt->errorInfo());
+            }
+        } catch (PDOException $e) {
+            return "Connection or query failed: " . $e->getMessage();
+        }
+    }
+
+    public static function blocker($id)
+    {
+        try {
+            $con = self::connection();
+            $req = "UPDATE utilisateur SET statut = :statut WHERE id = :id";
+            $stmt = $con->prepare($req);
+
+            $stmt->bindParam(':statut', $statut);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+
+            $statut = 'non';
+
+            if ($stmt->execute()) {
+                return "ok";
+            } else {
+                return "Query execution failed: " . implode(", ", $stmt->errorInfo());
+            }
+        } catch (PDOException $e) {
+            return "Connection or query failed: " . $e->getMessage();
+        }
+    }
+    public static function pseudo()
+    {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (isset($_SESSION['pseudo'])) {
+            return $_SESSION['pseudo'];
+        } else {
+            return null; // or any other default value or behavior you prefer
+        }
+    }
+    public static function role()
+    {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (isset($_SESSION['role'])) {
+            return $_SESSION['role'];
+        } else {
+            return null; // or any other default value or behavior you prefer
+        }
+    }
+    public function ListerByRole($role)
+    {
+        $resultat = array();
+        try {
+            $con = self::connection();
+            $req = "SELECT * FROM utilisateur WHERE role = :role";
+            $stmt = $con->prepare($req);
+            $stmt->bindParam(':role', $role, PDO::PARAM_STR);
+            $stmt->execute();
+            $resultat = $stmt->fetchAll(PDO::FETCH_CLASS, "systeme\Model\Utilisateur");
+        } catch (PDOException $e) {
+            return "Connection or query failed: " . $e->getMessage();
+        }
+        return $resultat;
+    }
+    public static function retournerUser($id)
+    {
+        try {
+            $con = self::connection();
+            $req = "SELECT nom, prenom FROM utilisateur WHERE id = :id";
+            $stmt = $con->prepare($req);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+
+            if ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $nom = $data['nom'] . " " . $data['prenom'];
+            } else {
+                $nom = "NON ATTRIBUER";
+            }
+
+            return $nom;
+        } catch (PDOException $e) {
+            // Handle and return the error message
+            return "Error: " . $e->getMessage();
+        }
+    }
+    public static function session_valeur()
+    {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (isset($_SESSION['utilisateur'])) {
+            try {
+               $decryptedData = Session::decryptSession($_SESSION['utilisateur']);
+                return $decryptedData->utilisateur ?? null; // Use null coalescing to handle undefined properties
+            } catch (Exception $e) {
+                return "Error: " . $e->getMessage();
+            }
+        } else {
+            return null;
+        }
+    }
+    public static function session()
+    {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        return isset($_SESSION['utilisateur']);
+    }
+    public static function logout()
+    {
+        if (isset($_SESSION['utilisateur'])) {
+            session_destroy();
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+    public static function login($critere, $motdepasse)
+    {
+        try {
+            $con = self::connection();
+
+            $req = "SELECT * FROM utilisateur WHERE pseudo = :critere OR email = :critere OR telephone = :critere";
+            $stmt = $con->prepare($req);
+            $stmt->bindParam(':critere', $critere, PDO::PARAM_STR);
+            $stmt->execute();
+            if ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                if (password_verify($motdepasse, $data['motdepasse'])) {
+                    if (isset($_SESSION['utilisateur'])) {
+                        return "session";
+                    } else {
+                        if ($data['statut'] === "oui") {
+                            $u1 = array();
+                            $u1['utilisateur'] = strval($data['id']);
+                            $u1['pseudo'] = $data['pseudo'];
+                            $u1['role'] = $data['role'];
+                            $_SESSION['utilisateur'] = Session::encryptSession($u1);
+                            return "ok";
+                        } else {
+                            return "bloque";
+                        }
+                    }
+                } else {
+                    return "incorrect";
+                }
+            } else {
+                return "incorrect";
+            }
+        } catch (PDOException $ex) {
+            return "Error: " . $ex->getMessage();
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }

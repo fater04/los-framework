@@ -15,7 +15,8 @@
     "plasticbrain/php-flash-messages": "^1.0",
     "ixudra/curl": "^6.20",
     "stefangabos/zebra_pagination": "^2.3",
-    "delight-im/auth": "^8.2"
+    "delight-im/auth": "^8.2",
+    "firebase/php-jwt": "^6.10"
   },
   "autoload":{
     "psr-4":{

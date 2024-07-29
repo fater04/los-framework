@@ -3,7 +3,9 @@
 namespace systeme\Model;
 
 use Ifsnop\Mysqldump as Imdump;
+use Ifsnop\Mysqldump\Mysqldump;
 
+#[\AllowDynamicProperties]
 class Backup
 {
     private $host;
@@ -12,6 +14,7 @@ class Backup
     private $user;
     private $storage;
     private $filename;
+    private $dumpSettings;
 
     /**
      * Get the value of host
@@ -133,27 +136,103 @@ class Backup
         return $this;
     }
 
-    public function __construct($infos = array(), $root)
+    /**
+     * @return mixed
+     */
+    public function getDumpSettings()
     {
+        return $this->dumpSettings;
+    }
+
+    /**
+     * @param mixed $dumpSettings
+     */
+    public function setDumpSettings($dumpSettings): void
+    {
+        $this->dumpSettings = $dumpSettings;
+    }
+
+    public function __construct()
+    {
+        $infos = $_SESSION['database'];
         $this->host = $infos['serveur'];
         $this->name = $infos['nom_base'];
         $this->user = $infos['utilisateur'];
         $this->pass = $infos['motdepasse'];
-        $this->storage = $root . "backup/";
-        $this->filename = "Backup_" . date("Y_m_d_H_i_s") . ".sql";
+        $this->storage = $_SERVER['DOCUMENT_ROOT'] . "/backup/";
+        $this->filename = "Backup_" . $infos['nom_base'] . "_" . date("Y-m-d_H-i-s") . ".sql";
+        $this->dumpSettings = self::getDefaultDumpSettings();
+    }
+
+    private function getDefaultDumpSettings(): array
+    {
+        return array(
+            'include-tables' => array(),
+            'exclude-tables' => array(),
+            'compress' => Mysqldump::NONE,
+            'no-data' => array(),
+            'if-not-exists' => false,
+            'reset-auto-increment' => false,
+            'add-drop-database' => false,
+            'add-drop-table' => true,
+            'add-drop-trigger' => true,
+            'add-locks' => true,
+            'complete-insert' => false,
+            'databases' => false,
+            'disable-keys' => true,
+            'extended-insert' => true,
+            'events' => false,
+            'hex-blob' => true,
+            'insert-ignore' => false,
+            'net_buffer_length' => Mysqldump::MAXLINESIZE,
+            'no-autocommit' => true,
+            'no-create-db' => false,
+            'no-create-info' => false,
+            'lock-tables' => true,
+            'routines' => false,
+            'single-transaction' => true,
+            'skip-triggers' => false,
+            'skip-tz-utc' => false,
+            'skip-comments' => true,
+            'skip-dump-date' => true,
+            'skip-definer' => true,
+            'where' => '',
+            'disable-foreign-keys-check' => true,
+            'default-character-set' => Mysqldump::UTF8,
+            'init_commands' => array(
+                'SET NAMES utf8 COLLATE utf8_general_ci'
+            ),
+        );
     }
 
     public function make()
     {
 
         try {
-            $dump = new Imdump\Mysqldump("mysql:host={$this->getHost()};dbname={$this->getName()}", "{$this->getUser()}", "{$this->getPass()}");
-            if (self::IsDir_or_CreateIt($this->storage)) {
+            $dump = new Imdump\Mysqldump("mysql:host={$this->getHost()};dbname={$this->getName()}", "{$this->getUser()}", "{$this->getPass()}", self::getDefaultDumpSettings());
+            if (self::IsDirOrCCreateIt($this->storage)) {
                 $dump->start("{$this->storage}{$this->filename}");
-                return "Une Sauvegarde  complète  de la base de donnée a été fait";
+                return "ok";
             } else {
-                return "Une erreur est survenue lors de la création
-                  du dossier " . $this->storage;
+                return "no";
+            }
+
+        } catch (\Exception $e) {
+            return "Erreur backup" . $e->getMessage();
+        }
+    }
+    public function makeCron($localhost,$db_name,$db_user,$db_pass,)
+    {
+        date_default_timezone_set('America/Port-au-Prince');
+        $storage="../../../backup/";
+        $filename="Backup_" . $db_name . "_" . date("Y-m-d_H-i-s") . ".sql";
+        try {
+            $dump = new Imdump\Mysqldump("mysql:host={$localhost};dbname={$db_name}", "{$db_user}", "{$db_pass}", $this->getDumpSettings());
+            if (self::IsDirOrCCreateIt($storage)) {
+                $dump->start("{$storage}{$filename}");
+                return "ok";
+            } else {
+                return "no";
             }
 
         } catch (\Exception $e) {
@@ -161,12 +240,13 @@ class Backup
         }
     }
 
-    public function IsDir_or_CreateIt($path)
+
+    public function IsDirOrCCreateIt($path)
     {
         if (is_dir($path)) {
             return true;
         } else {
-            if (mkdir($path)) {
+            if (mkdir($path, 0777, true)) {
                 return true;
             } else {
                 return false;
@@ -174,54 +254,7 @@ class Backup
         }
     }
 
-    public function liste()
-    {
-        $message = "";
-        if (isset($_GET['Delbackup'])) {
-            $path = $this->storage . $_GET['Delbackup'];
-            unlink($path);
-            header("Refresh: 0; url=" . $_SERVER['HTTP_REFERER']);
-            $message = "Supprimer !";
-        }
-        if (self::IsDir_or_CreateIt($this->storage)) {
-            $folder = $this->storage;
-            $dir = opendir($folder);
-            $list = "";
-            while ($file = readdir($dir)) {
-                if ($file != '.' && $file != '..' && !is_dir($folder . $file)) {
-                    $list .= "
-               <tr>
-               <td> " . $file . "</td>
-               <td> <a href='" . $folder . "/" . $file . "' class='btn btn-info'><span class='fa fa-download'></span>telecharger</a></td>
-               <td><a href='" . self::urlEncours() . "?Delbackup=" . $file . "' class='btn btn-danger'><span class='fa fa-trash'></span>supprimer</a></td>
-               </tr>";
-                }
-            }
-            closedir($dir);
-            $table = "
-        <div class='table-responsive'>
-        " . $message . "
-           <table class='table'>
-           <table class='table table-hover table-bordered'>
-            <thead>
-                <tr>
-                    <th>NAME</th>
-                    <th>DOWNLOAD</th>
-                    <th>DELETE</th>
-                </tr>
-            </thead>
-            <tbody>
-                " . $list . "
-            </tbody>
-  </table>
-          </table>
-        </div>";
-            return $table;
-        } else {
-            return "Une erreur est survenue lors de la création
-              du dossier " . $this->storage;
-        }
-    }
+
     public function urlEncours()
     {
         if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
@@ -241,5 +274,25 @@ class Backup
 
         // Afficher l'URL
         return $url;
+    }
+
+    public function ListeFiles()
+    {
+        if (self::IsDirOrCCreateIt($this->storage)) {
+            $fileArray = [];
+            $files = scandir($this->storage);
+            foreach ($files as $file) {
+                if (is_file($this->storage . $file)) {
+                    $fileArray[] = [
+                        'name' => $file,
+                        'modified' => date("Y-m-d H:i:s", filemtime($this->storage . $file)),
+                        'size' => round(filesize($this->storage . $file) / (1024 * 1024), 2) . ' MB'  // Convert bytes to MB
+
+                    ];
+                }
+            }
+
+            return $fileArray;
+        }
     }
 }

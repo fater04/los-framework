@@ -2,7 +2,7 @@
 
 
 namespace systeme\Model;
-
+#[\AllowDynamicProperties]
 class Formulaire extends Html
 {
     private $validation;
