@@ -17,119 +17,55 @@ class UtilisateurControlleur extends Controlleur
 {
     public function lister()
     {
-        $msg = New FlashMessages();
-        $variable['titre'] = "users";
-
-        if ($_SERVER['REQUEST_METHOD'] == "GET") {
-            if (isset($_GET['id'])) {
-                if (isset($_GET['bq'])) {
-                    $message = Utilisateur::blocker($_GET['id']);
-                    if ($message == "ok") {
-                        $msg->error("Bloquer  avec Succes ", "users");
-                    }
-                } elseif (isset($_GET['dbq'])) {
-                    $message = Utilisateur::deblocker($_GET['id']);
-                    if ($message == "ok") {
-                        $msg->success("Debloquer  avec Succes ", "users");
-                    }
-                } else {
-                    $resultat = Utilisateur::delete($_GET['id']);
-                    if ($resultat == "ok") {
-                        $msg->error("Suprime avec Succes ", "users");
-                    }
-
-                }
-
-            }
-        }
-
-        if ($_SERVER['REQUEST_METHOD'] == "POST") {
-
-            $nom = DefaultApp::trimInput($_POST['nomcomplet']);
-            $email = DefaultApp::trimInput($_POST['email']);
-            $pseudo = DefaultApp::trimInput($_POST['pseudo']);
-            $role = DefaultApp::trimInput($_POST['role']);
-            $password = DefaultApp::trimInput($_POST['password']);
-
-
-            if (isset($_POST['add-user'])) {
-
-                $user = new Utilisateur();
-                $user->setNom($nom);
-                $user->setEmail($email);
-                $user->setPseudo($pseudo);
-                $user->setMotdepasse($password);
-                $user->setPrenom('');
-                $user->setSexe('');
-                $user->setTelephone('');
-                $user->setImage('');
-
-                $resultat = $user->ajouter();
-                if ($resultat === 'ok') {
-                    Utilisateur::ajouterRole(Utilisateur::last(), $role);
-                    $msg->success("Utilisateur enregistré avec succes ");
-                } else {
-                    $msg->error($resultat);
-                }
-            }
-            if (isset($_POST['edit-user'])) {
-                $id=DefaultApp::trimInput($_POST['user_id']);
-                $old_role = DefaultApp::trimInput($_POST['old_role']);
-                $user = new Utilisateur();
-                $user->setId($id);
-                $user->setNom($nom);
-                $user->setEmail($email);
-                $user->setPseudo($pseudo);
-                $user->setPrenom('');
-                $user->setSexe('');
-                $user->setTelephone('');
-                $user->setImage('');
-                $resultat=$user->modifier();
-
-                if ($resultat == 'ok') {
-                    if ($password != "0000000000") {
-                        Utilisateur::changerMotdepasse($id,$password);
-                    }
-                    $msg->success("Utilisateur modifié avec succes ");
-                } else {
-                    $msg->error($resultat);
-                }
-
-            }
-        }
-
-        $utilisateur = New Utilisateur();
-        $variable['listeutilisateur'] = $utilisateur->lister()
-        ;
+        $variable['titre'] = "Utilisateur";
         return $this->render("default/utilisateur", $variable);
     }
 
 
 
-//    public function change_password($id)
-//    {
-//        $variable = array();
-//        $msg = new FlashMessages();
-//        $variable['titre'] = "Modifier mot de passe";
-//        $variable['id'] = $id;
-//        if ($_SERVER['REQUEST_METHOD'] === "POST") {
-//            $password1 = trim(addslashes($_POST['password1']));
-//            $password2 = trim(addslashes($_POST['password2']));
-//            if ($password1 === $password2) {
-//                $r = Utilisateur::changerMotdepasse($id,$password2);
-//                if ($r === 'ok') {
-//                    $msg->success("Mot de passe modifié avec succès ! ");
-//                    $variable['rediriger'] = "<script> setTimeout(\"location . href = '".DefaultApp::genererUrl('logout')."';\",3000);</script>";
-//
-//
-//                } else {
-//                    $msg->error("Une erreur s'est produite ,veuillez reessayer,svp ! ! ");
-//                }
-//            } else {
-//                $msg->error('les mot de passe ne sont pas identiques ! ! ');
-//            }
-//
-//        }
-//        return $this->render("default/change-password", $variable);
-//    }
+    public function change_password()
+    {
+        $variable = array();
+        $msg = new FlashMessages();
+        $variable['titre'] = "Modifier mot de passe";
+        if ($_SERVER['REQUEST_METHOD'] === "POST") {
+            $password0 = trim(addslashes($_POST['password0']));
+            $password1 = trim(addslashes($_POST['password1']));
+            $password2 = trim(addslashes($_POST['password2']));
+            if ($password1 === $password2) {
+                $r = Utilisateur::updateMotDePasse(Utilisateur::session_valeur(),$password2);
+                if ($r === 'ok') {
+                    $msg->info("Mot de passe modifié  ! ",'logout');
+                } else {
+                    $msg->info("Une erreur s'est produite ,veuillez reessayer,svp ! ! ");
+                }
+            } else {
+                $msg->info('les mot de passe ne sont pas identiques ! ! ');
+            }
+
+        }
+        if ($_SERVER['REQUEST_METHOD'] === "POST") {
+            $password0 = trim($_POST['password0']);
+            $password1 = trim($_POST['password1']);
+            $password2 = trim($_POST['password2']);
+            if ($password1 === $password2) {
+                $u0=new Utilisateur();
+                $user = $u0->findById(Utilisateur::session_valeur());
+                if (password_verify($password0, $user->getMotDePasse())) {
+                    $r = Utilisateur::updateMotDePasse($user->getId(), $password2);
+                    if ($r === 'ok') {
+                        $msg->info("Mot de passe modifié !");
+                    } else {
+                        $msg->info("Une erreur s'est produite, veuillez réessayer, s'il vous plaît !");
+                    }
+                } else {
+                    $msg->info('Le mot de passe actuel est incorrect !');
+                }
+            } else {
+                $msg->info('Les mots de passe ne sont pas identiques !');
+            }
+        }
+
+        return $this->render("default/change-password", $variable);
+    }
 }

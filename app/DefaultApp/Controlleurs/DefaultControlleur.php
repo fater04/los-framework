@@ -29,7 +29,7 @@ class DefaultControlleur extends Controlleur
             if(Utilisateur::logout()) {
                 setcookie("utilisateur", "", -1, "/");
                 unset($_COOKIE['utilisateur']);
-                $msg->info("Sign Out sucessfully", 'logout');
+                $msg->info("Sign Out sucessfully", 'login');
             }
         }
         return $this->render("default/login", $variable);

@@ -9,6 +9,8 @@
 namespace systeme\Application;
 
 session_start();
+
+$_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 class Session
 {
     public static  function encryptSession($value, $key="Fater_04")

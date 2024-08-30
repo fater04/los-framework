@@ -189,7 +189,7 @@ class Model extends Session
                 $name = $propriete->getName();
                 $value = $propriete->getValue($this);
                 if ($value == "") {
-                    $value = 'null';
+                    $value = ' ';
                 }
                 if ($name != 'table') {
                     if ($name != 'id') {
@@ -227,7 +227,7 @@ class Model extends Session
                 $name = $propriete->getName();
                 $value = $propriete->getValue($this);
                 if ($value == "") {
-                    $value = 'null';
+                    $value = ' ';
                 }
 
                 if ($name != 'table') {

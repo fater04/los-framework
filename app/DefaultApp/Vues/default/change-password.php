@@ -6,28 +6,33 @@
  * created at 1/27/2022 - 9:42 AM
  */
 ?>
-<div class="col-lg-9">
-    <div class="iq-card">
-        <div class="iq-card-header d-flex justify-content-between">
-            <div class="iq-header-title">
+<div class="col-lg-6">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between">
+            <div class="card-title">
                 <h4 class="card-title">Modifier mot de passe</h4>
             </div>
         </div>
-        <div class="iq-card-body">
+        <div class="card-body">
             <div class="new-user-info">
-                <form method="post" action="" >
-                    <div class="row">
-                        <div class="form-group col-md-6">
+                <form method="post" >
+                    <div class="row ">
+                        <div class="form-group col-md-12">
+                            <label for="pass">Ancien mot de passe :</label>
+                            <input type="password" class="form-control"  name="password0" placeholder="ancien mot de passe" required>
+                        </div>
+                        <div class="form-group col-md-12">
                             <label for="pass">Nouveau mot de passe :</label>
                             <input type="password" class="form-control"  name="password1" placeholder="nouveau mot de passe" required>
                         </div>
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-12">
                             <label for="rpass">Confirmer nouveau mot de passe :</label>
                             <input type="password" class="form-control"  name="password2" placeholder="confirmer mot de passe " required>
                         </div>
                     </div>
-                    <input type="hidden"  name="id" value="<?=$id?>"/>
+                    <div class="card-footer pt-4">
                     <input type="submit" value="Modifier" class="btn btn-primary">
+                    </div>
                 </form>
             </div>
         </div>

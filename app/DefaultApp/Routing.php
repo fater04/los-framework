@@ -10,3 +10,6 @@ App::get("logout", "default.logout", "logout");
 
 App::get("users", "utilisateur.lister", "users");
 App::post("users", "utilisateur.lister", "users");
+
+App::get("change-password", "utilisateur.change_password", "change-password");
+App::post("change-password", "utilisateur.change_password", "change-password");

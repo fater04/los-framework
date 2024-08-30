@@ -6,6 +6,8 @@ date_default_timezone_set('America/Port-au-Prince');
 if (!\systeme\Model\Utilisateur::session()) {
     ap::redirection('login');
 }
+$user=new \systeme\Model\Utilisateur();
+$u0=$user->findById(\systeme\Model\Utilisateur::session_valeur());
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -18,9 +20,12 @@ if (!\systeme\Model\Utilisateur::session()) {
     <link rel="stylesheet" href="public/admin/assets/vendor/open-iconic/font/css/open-iconic-bootstrap.min.css">
     <link rel="stylesheet" href="public/admin/assets/vendor/fortawesome/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="public/admin/assets/vendor/flatpickr/flatpickr.min.css">
+    <link rel="stylesheet" href="public/admin/assets/vendor/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css">
+    <link rel="stylesheet" href="public/admin/assets/stylesheets/sweetalert2.min.css">
     <link rel="stylesheet" href="public/admin/assets/stylesheets/theme.min.css" data-skin="default">
     <link rel="stylesheet" href="public/admin/assets/stylesheets/theme-dark.min.css" data-skin="dark">
     <link rel="stylesheet" href="public/admin/assets/stylesheets/custom.css">
+
     <script>
         var skin = localStorage.getItem('skin') || 'default';
         var disabledSkinStylesheet = document.querySelector('link[data-skin]:not([data-skin="' + skin + '"])');
@@ -28,9 +33,21 @@ if (!\systeme\Model\Utilisateur::session()) {
         disabledSkinStylesheet.setAttribute('disabled', true);
         document.querySelector('html').classList.add('loading');
     </script>
+    <style>
+        #ajax-loading {
+            position: fixed;
+            z-index: 9999;
+            background: url("public/load.svg") 50% 50% no-repeat;
+            top: 0px;
+            left: 0px;
+            height: 100%;
+            width: 100%;
+            cursor: wait;
+        }
+    </style>
 </head>
 <body>
-
+<div id="ajax-loading"></div>
 <div class="app">
     <!--[if lt IE 10]>
     <div class="page-message" role="alert">You are using an <strong>outdated</strong> browser. Please <span
@@ -59,94 +76,16 @@ if (!\systeme\Model\Utilisateur::session()) {
                 </div>
                 <div class="top-bar-item top-bar-item-full">
 
-                    <form class="top-bar-search col-6">
-                        <div class="input-group input-group-search dropdown">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><span class="oi oi-magnifying-glass"></span></span>
-                            </div>
-                            <input type="text" class="form-control" placeholder="Search">
-                        </div>
-                    </form>
+<!--                    <form class="top-bar-search col-6">-->
+<!--                        <div class="input-group input-group-search dropdown">-->
+<!--                            <div class="input-group-prepend">-->
+<!--                                <span class="input-group-text"><span class="oi oi-magnifying-glass"></span></span>-->
+<!--                            </div>-->
+<!--                            <input type="text" class="form-control" placeholder="Search">-->
+<!--                        </div>-->
+<!--                    </form>-->
                 </div>
                 <div class="top-bar-item top-bar-item-right px-0 d-none d-sm-flex">
-
-                    <ul class="header-nav nav">
-                        <li class="nav-item dropdown header-nav-dropdown has-notified">
-                            <a class="nav-link" href="#" data-toggle="dropdown" aria-haspopup="true"
-                               aria-expanded="false"><span class="oi oi-envelope-open"></span></a>
-                            <!-- .dropdown-menu -->
-                            <div class="dropdown-menu dropdown-menu-rich dropdown-menu-right">
-                                <div class="dropdown-arrow"></div>
-                                <h6 class="dropdown-header stop-propagation">
-                                    <span>Messages</span> <a href="#">Mark all as read</a>
-                                </h6><!-- .dropdown-scroll -->
-                                <div class="dropdown-scroll perfect-scrollbar">
-                                    <!-- .dropdown-item -->
-                                    <a href="#" class="dropdown-item unread">
-                                        <div class="user-avatar">
-                                            <img src="public/admin/assets/images/avatars/team1.jpg" alt="">
-                                        </div>
-                                        <div class="dropdown-item-body">
-                                            <p class="subject"> Stilearning </p>
-                                            <p class="text text-truncate"> Invitation: Joe's Dinner @ Fri Aug 22 </p>
-                                            <span class="date">2 hours ago</span>
-                                        </div>
-                                    </a> <!-- /.dropdown-item -->
-                                    <!-- .dropdown-item -->
-                                    <a href="#" class="dropdown-item">
-                                        <div class="user-avatar">
-                                            <img src="public/admin/assets/images/avatars/team3.png" alt="">
-                                        </div>
-                                        <div class="dropdown-item-body">
-                                            <p class="subject"> Openlane </p>
-                                            <p class="text text-truncate"> Final reminder: Upgrade to Pro </p><span
-                                                    class="date">23 hours ago</span>
-                                        </div>
-                                    </a> <!-- /.dropdown-item -->
-                                    <!-- .dropdown-item -->
-                                    <a href="#" class="dropdown-item">
-                                        <div class="tile tile-circle bg-green"> GZ</div>
-                                        <div class="dropdown-item-body">
-                                            <p class="subject"> Gogo Zoom </p>
-                                            <p class="text text-truncate"> Live healthy with this wireless sensor. </p>
-                                            <span class="date">1 day ago</span>
-                                        </div>
-                                    </a> <!-- /.dropdown-item -->
-                                    <!-- .dropdown-item -->
-                                    <a href="#" class="dropdown-item">
-                                        <div class="tile tile-circle bg-teal"> GD</div>
-                                        <div class="dropdown-item-body">
-                                            <p class="subject"> Gold Dex </p>
-                                            <p class="text text-truncate"> Invitation: Design Review @ Mon Jul 7 </p>
-                                            <span class="date">1 day ago</span>
-                                        </div>
-                                    </a> <!-- /.dropdown-item -->
-                                    <!-- .dropdown-item -->
-                                    <a href="#" class="dropdown-item">
-                                        <div class="user-avatar">
-                                            <img src="public/admin/assets/images/avatars/team2.png" alt="">
-                                        </div>
-                                        <div class="dropdown-item-body">
-                                            <p class="subject"> Creative Division </p>
-                                            <p class="text text-truncate"> Need some feedback on this please </p><span
-                                                    class="date">2 days ago</span>
-                                        </div>
-                                    </a> <!-- /.dropdown-item -->
-                                    <!-- .dropdown-item -->
-                                    <a href="#" class="dropdown-item">
-                                        <div class="tile tile-circle bg-pink"> LD</div>
-                                        <div class="dropdown-item-body">
-                                            <p class="subject"> Lab Drill </p>
-                                            <p class="text text-truncate"> Our UX exercise is ready </p><span
-                                                    class="date">6 days ago</span>
-                                        </div>
-                                    </a> <!-- /.dropdown-item -->
-                                </div><!-- /.dropdown-scroll -->
-                                <a href="page-messages.html" class="dropdown-footer">All messages <i
-                                            class="fas fa-fw fa-long-arrow-alt-right"></i></a>
-                            </div><!-- /.dropdown-menu -->
-                        </li>
-                    </ul>
                     <div class="dropdown d-none d-md-flex">
                         <button class="btn-account" type="button" data-toggle="dropdown" aria-haspopup="true"
                                 aria-expanded="false">
@@ -154,20 +93,17 @@ if (!\systeme\Model\Utilisateur::session()) {
                                 <img src="public/admin/assets/images/avatars/profile.jpg" alt="">
                             </span>
                             <span class="account-summary pr-lg-4 d-none d-lg-block">
-                                <span class="account-name">Beni Arisandi</span>
-                                <span class="account-description">Marketing Manager</span>
+                                <span class="account-name"><?=$u0->getNom() ?></span>
+                                <span class="account-description"><?=$u0->getEmail()?></span>
                             </span>
                         </button>
                         <div class="dropdown-menu">
                             <div class="dropdown-arrow d-lg-none" x-arrow=""></div>
                             <div class="dropdown-arrow ml-3 d-none d-lg-block"></div>
-                            <h6 class="dropdown-header d-none d-md-block d-lg-none"> Beni Arisandi </h6>
-                            <a class="dropdown-item" href="#"><span
-                                        class="dropdown-icon oi oi-person"></span> Profile</a>
+                            <a class="dropdown-item" href="<?= ap::genererUrl('change-password')?>"><span
+                                        class="dropdown-icon oi oi-person"></span> Modifier mot de passe</a>
                             <a class="dropdown-item" href="<?= ap::genererUrl('logout')?>">
-                                <span class="dropdown-icon oi oi-account-logout"></span> Logout</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">Help Center</a>
+                                <span class="dropdown-icon oi oi-account-logout"></span> Se deconnecter</a>
                         </div>
                     </div>
                 </div>
@@ -263,13 +199,69 @@ if (!\systeme\Model\Utilisateur::session()) {
 <script src="public/admin/assets/vendor/flatpickr/flatpickr.min.js"></script>
 <script src="public/admin/assets/vendor/easy-pie-chart/jquery.easypiechart.min.js"></script>
 <script src="public/admin/assets/vendor/chart.js/Chart.min.js"></script>
+<script src="public/admin/assets/vendor/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="public/admin/assets/vendor/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+<script src="public/admin/assets/vendor/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script> <!-- END PLUGINS JS -->
 <script src="public/admin/assets/javascript/theme.min.js"></script>
-<script src="public/admin/assets/javascript/pages/dashboard-demo.js"></script>
+<script src="public/admin/assets/javascript/sweetalert2.all.min.js"></script>
+<script src="public/admin/assets/javascript/pages/dataTables.bootstrap.js"></script>
 <script type="text/javascript">
     window.setTimeout(function () {
         $(".alert").fadeTo(500, 0).slideUp(500, function () {
             $(this).remove();
         });
     }, 4000);
+    $(document).ready(function() {
+        $("#ajax-loading").hide();
+        $("#list_users").DataTable({
+            "paging": true,
+            "processing": true,
+            "serverSide": true,
+            "orderable": false,
+            "order": [[1, "desc"]],
+            "info": true,
+            "ajax": {
+                url: "app/DefaultApp/traitements/datatables.php?users",
+                type: "POST"
+            },
+            "columnDefs": [
+                {
+                    "targets": [0],
+                    "orderable": false,
+                }
+            ],
+        });
+
+        $("#form_ajouter_utilisateur").submit(function (e) {
+            $("#ajax-loading").show();
+            e.preventDefault();
+            var formData = new FormData(this);
+            $.ajax({
+                type: "POST",
+                url: "app/DefaultApp/traitements/traitements.php?ajouter_utilisateur",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    $("#ajax-loading").hide();
+                    var obj = $.parseJSON(data);
+                    if (obj.status === "ok") {
+                        Swal.fire({
+                            icon: "success",
+                            allowOutsideClick: false,
+                            title: obj.message,
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                        $("#list_users").DataTable().ajax.reload();
+                        $("#form_ajouter_utilisateur")[0].reset();
+                        $(".bd-example-modal-lg").modal("toggle");
+
+                    }
+                }
+            });
+        });
+    });
+
 </script>
 </html>

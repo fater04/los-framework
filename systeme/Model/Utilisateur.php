@@ -26,10 +26,8 @@ class Utilisateur extends Model
     private $role;
     private $statut;
     private $nom;
-    private $prenom;
-    private $sexe;
     private $telephone;
-    private $image;
+    private $photo;
     private $verified;
     private $date_creation;
     private $derniere_connection;
@@ -116,37 +114,7 @@ class Utilisateur extends Model
         $this->nom = $nom;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getPrenom()
-    {
-        return $this->prenom;
-    }
 
-    /**
-     * @param mixed $prenom
-     */
-    public function setPrenom($prenom): void
-    {
-        $this->prenom = $prenom;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSexe()
-    {
-        return $this->sexe;
-    }
-
-    /**
-     * @param mixed $sexe
-     */
-    public function setSexe($sexe): void
-    {
-        $this->sexe = $sexe;
-    }
 
     /**
      * @return mixed
@@ -167,18 +135,19 @@ class Utilisateur extends Model
     /**
      * @return mixed
      */
-    public function getImage()
+    public function getPhoto()
     {
-        return $this->image;
+        return $this->photo;
     }
 
     /**
-     * @param mixed $image
+     * @param mixed $photo
      */
-    public function setImage($image): void
+    public function setPhoto($photo): void
     {
-        $this->image = $image;
+        $this->photo = $photo;
     }
+
 
     /**
      * @return mixed
@@ -307,14 +276,13 @@ class Utilisateur extends Model
             if (self::SiEmailExiste($this->getEmail())) {
                 return "Email exist";
             }
-            $req = "INSERT INTO utilisateur (pseudo, email, role, nom,prenom,motdepasse, statut, photo, telephone) VALUES (:pseudo,:email, :role, :nom,:prenom, :motdepasse, :statut, :photo, :telephone)";
+            $req = "INSERT INTO utilisateur (pseudo, email, role, nom,motdepasse, statut, photo, telephone) VALUES (:pseudo,:email, :role, :nom, :motdepasse, :statut, :photo, :telephone)";
             $pdo = self::connection();
             $stmt = $pdo->prepare($req);
             $stmt->bindParam(':pseudo', $this->pseudo, PDO::PARAM_STR);
             $stmt->bindParam(':email', $this->email, PDO::PARAM_STR);
             $stmt->bindParam(':role', $this->role, PDO::PARAM_STR);
             $stmt->bindParam(':nom', $this->nom, PDO::PARAM_STR);
-            $stmt->bindParam(':prenom', $this->nom, PDO::PARAM_STR);
             $stmt->bindParam(':motdepasse', $this->motdepasse, PDO::PARAM_STR);
             $stmt->bindParam(':statut', $this->statut, PDO::PARAM_STR);
             $stmt->bindParam(':photo', $this->photo, PDO::PARAM_STR);
@@ -328,6 +296,58 @@ class Utilisateur extends Model
             return $ex->getMessage();
         }
     }
+    public function modifier($userId)
+    {
+        try {
+
+            $req = "UPDATE utilisateur 
+                SET pseudo = :pseudo, 
+                    email = :email, 
+                    role = :role, 
+                    nom = :nom, 
+                    statut = :statut, 
+                    photo = :photo, 
+                    telephone = :telephone";
+
+            // Add password update only if it's provided
+            if (!empty($this->motdepasse)) {
+                $req .= ", motdepasse = :motdepasse";
+            }
+
+            $req .= " WHERE id = :userId";
+
+            $pdo = self::connection();
+            $stmt = $pdo->prepare($req);
+
+            // Bind the parameters
+            $stmt->bindParam(':pseudo', $this->pseudo, PDO::PARAM_STR);
+            $stmt->bindParam(':email', $this->email, PDO::PARAM_STR);
+            $stmt->bindParam(':role', $this->role, PDO::PARAM_STR);
+            $stmt->bindParam(':nom', $this->nom, PDO::PARAM_STR);
+            $stmt->bindParam(':statut', $this->statut, PDO::PARAM_INT);
+            $stmt->bindParam(':photo', $this->photo, PDO::PARAM_STR);
+            $stmt->bindParam(':telephone', $this->telephone, PDO::PARAM_STR);
+
+            // Bind the hashed password if it's being updated
+            if (!empty($this->motdepasse)) {
+                $hashedPassword = password_hash($this->motdepasse, PASSWORD_DEFAULT);
+                $stmt->bindParam(':motdepasse', $hashedPassword, PDO::PARAM_STR);
+            }
+
+            // Bind the user ID
+            $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
+
+            // Execute the update statement
+            if ($stmt->execute()) {
+                return "ok";
+            } else {
+                return "no";
+            }
+        } catch (Exception $ex) {
+            return "Error: " . $ex->getMessage();
+        }
+    }
+
 
     private static function SiPseudoExiste($pseudo)
     {
@@ -626,6 +646,7 @@ class Utilisateur extends Model
     public static function deblocker($id)
     {
         try {
+            $statut = 'oui';
             $con = self::connection();
             $req = "UPDATE utilisateur SET statut = :statut WHERE id = :id";
             $stmt = $con->prepare($req);
@@ -633,7 +654,7 @@ class Utilisateur extends Model
             $stmt->bindParam(':statut', $statut);
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
 
-            $statut = 'oui';
+
 
             if ($stmt->execute()) {
                 return "ok";
@@ -651,11 +672,11 @@ class Utilisateur extends Model
             $con = self::connection();
             $req = "UPDATE utilisateur SET statut = :statut WHERE id = :id";
             $stmt = $con->prepare($req);
-
+            $statut = 'non';
             $stmt->bindParam(':statut', $statut);
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
 
-            $statut = 'non';
+
 
             if ($stmt->execute()) {
                 return "ok";
